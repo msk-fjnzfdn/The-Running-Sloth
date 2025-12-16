@@ -1,5 +1,6 @@
-from constants import *
-
+import arcade
+import math
+import random
 
 # Константы окна
 SCREEN_WIDTH = 1200
@@ -14,6 +15,7 @@ COLOR_HIGHLIGHT = (100, 200, 255)
 COLOR_UI_TEXT = (240, 240, 200)
 COLOR_SELECTED = (255, 215, 0)
 COLOR_UNSELECTED = (150, 150, 180)
+COLOR_SELECTION_RECT = (255, 215, 0, 80)  # Полупрозрачный желтый для прямоугольника выделения
 
 
 class CharacterSlot:
@@ -27,27 +29,61 @@ class CharacterSlot:
         self.is_hovered = False
         self.color = COLOR_UNSELECTED
         
-    def draw(self):
-        # Фон слота
-        color = COLOR_SELECTED if self.is_selected else (COLOR_HIGHLIGHT if self.is_hovered else self.color)
-        
-        # Платформа персонажа
-        '''
-        arcade.draw_rectangle_filled(
-            self.center_x, self.center_y,
-            200, 250,
-            COLOR_PLATFORM
+        # Создаем текстовые объекты заранее
+        self.text_code = arcade.Text(
+            "КОД ПЕРСОНАЖА",
+            x, y + 40,
+            arcade.color.WHITE, 14,
+            anchor_x="center", anchor_y="center",
+            bold=True
         )
-        '''
-        '''
-        # Выделение если выбран/наведен
-        if self.is_selected or self.is_hovered:
-            arcade.draw_rectangle_outline(
-                self.center_x, self.center_y,
-                210, 260,
-                color, 3
+        
+        self.text_subcode = arcade.Text(
+            "записан здесь!",
+            x, y + 20,
+            arcade.color.LIGHT_GRAY, 12,
+            anchor_x="center", anchor_y="center"
+        )
+        
+        self.text_name = arcade.Text(
+            name,
+            x, y - 70,
+            arcade.color.WHITE, 20,
+            anchor_x="center", anchor_y="center",
+            bold=True
+        )
+        
+        self.text_desc = arcade.Text(
+            description,
+            x, y - 100,
+            arcade.color.LIGHT_GRAY, 14,
+            anchor_x="center", anchor_y="center",
+            align="center",
+            width=180
+        )
+        
+        self.text_selected = arcade.Text(
+            "✓ ВЫБРАН",
+            x, y - 130,
+            COLOR_SELECTED, 16,
+            anchor_x="center", anchor_y="center",
+            bold=True
+        )
+        
+    def draw(self):
+        """Отрисовка слота персонажа"""
+        # Полупрозрачный прямоугольник выделения для выбранного персонажа
+        if self.is_selected:
+            arcade.draw_rect_filled(
+                arcade.rect.XYWH(
+                    self.center_x,
+                    self.center_y + 10,
+                    210,  # Ширина
+                    260   # Высота
+                ),
+                COLOR_SELECTION_RECT
             )
-        '''
+        
         # Персонаж (пока просто кружок с комментом)
         arcade.draw_circle_filled(
             self.center_x, self.center_y + 40,
@@ -57,52 +93,18 @@ class CharacterSlot:
             (150, 200, 100)
         )
         
-        # Коммент "Код персонажа записан здесь!"
-        arcade.draw_text(
-            "КОД ПЕРСОНАЖА",
-            self.center_x, self.center_y + 40,
-            arcade.color.WHITE, 14,
-            anchor_x="center", anchor_y="center",
-            bold=True
-        )
-        
-        arcade.draw_text(
-            "записан здесь!",
-            self.center_x, self.center_y + 20,
-            arcade.color.LIGHT_GRAY, 12,
-            anchor_x="center", anchor_y="center"
-        )
-        
-        # Имя персонажа
-        arcade.draw_text(
-            self.name,
-            self.center_x, self.center_y - 70,
-            arcade.color.WHITE, 20,
-            anchor_x="center", anchor_y="center",
-            bold=True
-        )
-        
-        # Описание
-        arcade.draw_text(
-            self.description,
-            self.center_x, self.center_y - 100,
-            arcade.color.LIGHT_GRAY, 14,
-            anchor_x="center", anchor_y="center",
-            align="center",
-            width=180
-        )
+        # Отображаем заранее созданные текстовые объекты
+        self.text_code.draw()
+        self.text_subcode.draw()
+        self.text_name.draw()
+        self.text_desc.draw()
         
         # Индикатор выбора
         if self.is_selected:
-            arcade.draw_text(
-                "✓ ВЫБРАН",
-                self.center_x, self.center_y - 130,
-                COLOR_SELECTED, 16,
-                anchor_x="center", anchor_y="center",
-                bold=True
-            )
+            self.text_selected.draw()
 
-class CharacterLobby(arcade.View):
+
+class CharacterLobbyView(arcade.View):
     def __init__(self):
         super().__init__()
         
@@ -119,21 +121,32 @@ class CharacterLobby(arcade.View):
         self.game_time = 0
         
         # Текст инструкций
-        self.instructions = [
-            "ДОБРО ПОЖАЛОВАТЬ В ЛОББИ ПЕРСОНАЖЕЙ",
-            "Выберите персонажа для начала игры",
-            "Нажмите ПРОБЕЛ для подтверждения выбора",
-            "Используйте ← → для навигации"
-        ]
+        self.instruction_texts = []
+        
+        # Заголовки
+        self.title_text = None
+        self.subtitle_text = None
+        
+        # Тексты для статистики в правом нижнем углу
+        self.selected_title_text = None
+        self.stats_texts = []
+        
+        # Кнопки
+        self.button_texts = []
+        
+        # Координаты мыши
+        self._mouse_x = 0
+        self._mouse_y = 0
+        
+        self.setup()
     
     def setup(self):
         # Создаем слоты для персонажей
         slot_positions = [
-            (SCREEN_WIDTH * 0.25, SCREEN_HEIGHT * 0.55, 1, "ЛЕНИВЕЦ БОБИ", "Медленный, но сильный\nВысокая защита"),
-            (SCREEN_WIDTH * 0.5, SCREEN_HEIGHT * 0.55, 2, "ПАНДА ПИТ", "Баланс скорости и силы\nУниверсальный боец"),
-            (SCREEN_WIDTH * 0.75, SCREEN_HEIGHT * 0.55, 3, "ЁЖИК СПИДИ", "Быстрый и ловкий\nНизкий урон, высокая мобильность")
+            (SCREEN_WIDTH * 0.25, SCREEN_HEIGHT * 0.55, 1, "ЛЕНИВЕЦ БОБИ", ""),
+            (SCREEN_WIDTH * 0.5, SCREEN_HEIGHT * 0.55, 2, "ПАНДА ПИТ", ""),
+            (SCREEN_WIDTH * 0.75, SCREEN_HEIGHT * 0.55, 3, "ЁЖИК СПИДИ", "")
         ]
-        
         for x, y, char_id, name, desc in slot_positions:
             slot = CharacterSlot(x, y, char_id, name, desc)
             self.character_slots.append(slot)
@@ -147,7 +160,7 @@ class CharacterLobby(arcade.View):
         self._create_ui()
         
         # Создаем частицы для фона
-        for _ in range(50):
+        for _ in range(30):
             self.particles.append({
                 'x': random.uniform(0, SCREEN_WIDTH),
                 'y': random.uniform(0, SCREEN_HEIGHT),
@@ -160,6 +173,72 @@ class CharacterLobby(arcade.View):
                 ]),
                 'offset': random.uniform(0, math.pi * 2)
             })
+        
+        # Создаем текстовые объекты для инструкций
+        instructions = [
+            "ДОБРО ПОЖАЛОВАТЬ В ЛОББИ ПЕРСОНАЖЕЙ",
+            "Выберите персонажа для начала игры",
+            "Нажмите ПРОБЕЛ для подтверждения выбора",
+            "Используйте ← → для навигации"
+        ]
+        
+        for i, text in enumerate(instructions):
+            color = COLOR_HIGHLIGHT if i == 0 else arcade.color.LIGHT_GRAY
+            size = 18 if i == 0 else 16
+            y_pos = SCREEN_HEIGHT - 200 - i * 30
+            
+            self.instruction_texts.append(
+                arcade.Text(
+                    text,
+                    SCREEN_WIDTH // 2, y_pos,
+                    color, size,
+                    anchor_x="center", anchor_y="center"
+                )
+            )
+        
+        # Создаем заголовки
+        self.title_text = arcade.Text(
+            "THE RUNNING SLOTH",
+            SCREEN_WIDTH // 2,
+            SCREEN_HEIGHT - 100,
+            COLOR_UI_TEXT,
+            48,
+            anchor_x="center",
+            font_name="Kenney Blocks",
+            bold=True
+        )
+        
+        self.subtitle_text = arcade.Text(
+            "ЛОББИ ВЫБОРА ПЕРСОНАЖА",
+            SCREEN_WIDTH // 2,
+            SCREEN_HEIGHT - 150,
+            (200, 200, 255), 28,
+            anchor_x="center"
+        )
+        
+        # Создаем текстовые объекты для статистики - ЛЕВЕЕ на 250 пикселей
+        stats_x = SCREEN_WIDTH - 350  # Было -100, стало -350 (левее на 250)
+        
+        # Заголовок выбранного персонажа
+        self.selected_title_text = arcade.Text(
+            "",
+            stats_x, 180,
+            COLOR_SELECTED, 22,
+            anchor_x="left", anchor_y="center",
+            bold=True
+        )
+        
+        # Создаем 3 текстовых объекта для статистики (максимум 3 строки)
+        for i in range(3):
+            y_pos = 180 - 40 - i * 30
+            self.stats_texts.append(
+                arcade.Text(
+                    "",
+                    stats_x, y_pos,
+                    arcade.color.LIGHT_GRAY, 16,
+                    anchor_x="left", anchor_y="center"
+                )
+            )
     
     def _create_ui(self):
         # Кнопка "НАЧАТЬ ИГРУ"
@@ -171,6 +250,17 @@ class CharacterLobby(arcade.View):
         self.ui_elements.append(start_btn)
         self.buttons.append(start_btn)
         
+        # Текст кнопки
+        self.button_texts.append(
+            arcade.Text(
+                "НАЧАТЬ ИГРУ",
+                start_btn.center_x, start_btn.center_y,
+                arcade.color.WHITE, 24,
+                anchor_x="center", anchor_y="center",
+                bold=True
+            )
+        )
+        
         # Кнопка "НАЗАД" (в стартовое меню)
         back_btn = arcade.SpriteSolidColor(200, 50, (100, 100, 120))
         back_btn.center_x = 120
@@ -179,6 +269,17 @@ class CharacterLobby(arcade.View):
         back_btn.is_hovered = False
         self.ui_elements.append(back_btn)
         self.buttons.append(back_btn)
+        
+        # Текст кнопки
+        self.button_texts.append(
+            arcade.Text(
+                "НАЗАД",
+                back_btn.center_x, back_btn.center_y,
+                arcade.color.WHITE, 24,
+                anchor_x="center", anchor_y="center",
+                bold=True
+            )
+        )
     
     def on_draw(self):
         self.clear(COLOR_BACKGROUND)
@@ -187,7 +288,8 @@ class CharacterLobby(arcade.View):
         self._draw_background()
         
         # Рисуем заголовок
-        self._draw_header()
+        self.title_text.draw()
+        self.subtitle_text.draw()
         
         # Рисуем слоты персонажей
         for slot in self.character_slots:
@@ -200,19 +302,19 @@ class CharacterLobby(arcade.View):
         self._draw_ui_text()
         
         # Рисуем инструкции
-        self._draw_instructions()
+        for text in self.instruction_texts:
+            text.draw()
         
         # Рисуем информацию о выбранном персонаже
         self._draw_selected_info()
     
     def _draw_background(self):
         # Градиентный фон
-        for i in range(100):
-            t = i / 100
-            height = SCREEN_HEIGHT / 100
+        for i in range(10):
+            t = i / 10
+            height = SCREEN_HEIGHT / 10
             y = i * height
             
-            # Темно-синий градиент
             color = (
                 int(20 * (1 - t) + 10 * t),
                 int(15 * (1 - t) + 5 * t),
@@ -227,83 +329,38 @@ class CharacterLobby(arcade.View):
         
         # Плавающие частицы
         for particle in self.particles:
-            pulse = (math.sin(self.game_time * particle['speed'] + particle['offset']) + 1) * 0.5
-            alpha = int(50 + pulse * 50)
-            size = particle['size'] * (0.8 + pulse * 0.4)
-            
-            arcade.draw_circle_filled(
-                particle['x'],
-                particle['y'],
-                size,
-                (*particle['color'][:3], alpha)
-            )
-    
-    def _draw_header(self):
-        # Большой заголовок
-        arcade.draw_text(
-            "THE RUNNING SLOTH",
-            SCREEN_WIDTH // 2,
-            SCREEN_HEIGHT - 100,
-            COLOR_UI_TEXT,
-            48,
-            anchor_x="center",
-            font_name="Kenney Blocks",
-            bold=True
-        )
-        
-        arcade.draw_text(
-            "ЛОББИ ВЫБОРА ПЕРСОНАЖА",
-            SCREEN_WIDTH // 2,
-            SCREEN_HEIGHT - 150,
-            (200, 200, 255), 28,
-            anchor_x="center"
-        )
+            if 0 <= particle['x'] <= SCREEN_WIDTH and 0 <= particle['y'] <= SCREEN_HEIGHT:
+                pulse = (math.sin(self.game_time * particle['speed'] + particle['offset']) + 1) * 0.5
+                alpha = int(50 + pulse * 50)
+                size = particle['size'] * (0.8 + pulse * 0.4)
+                
+                arcade.draw_circle_filled(
+                    particle['x'],
+                    particle['y'],
+                    size,
+                    (*particle['color'][:3], alpha)
+                )
     
     def _draw_ui_text(self):
-        for btn in self.buttons:
-            color = COLOR_HIGHLIGHT if btn.is_hovered else arcade.color.WHITE
-            
-            # Обводка при наведении
-            '''
+        for i, btn in enumerate(self.buttons):
             if btn.is_hovered:
-                arcade.draw_rectangle_outline(
-                    btn.center_x, btn.center_y,
-                    btn.width + 8, btn.height + 8,
-                    COLOR_HIGHLIGHT, 3
-                )
-            '''
-            # Текст кнопки
-            arcade.draw_text(
-                btn.label,
-                btn.center_x, btn.center_y,
-                color, 24,
-                anchor_x="center", anchor_y="center",
-                bold=True
-            )
-    
-    def _draw_instructions(self):
-        for i, text in enumerate(self.instructions):
-            y_pos = SCREEN_HEIGHT - 200 - i * 30
-            color = COLOR_HIGHLIGHT if i == 0 else arcade.color.LIGHT_GRAY
+                color = COLOR_HIGHLIGHT
+            else:
+                color = arcade.color.WHITE
             
-            arcade.draw_text(
-                text,
-                SCREEN_WIDTH // 2, y_pos,
-                color, 18 if i == 0 else 16,
-                anchor_x="center", anchor_y="center"
-            )
+            if i < len(self.button_texts):
+                self.button_texts[i].color = color
+        
+        for text in self.button_texts:
+            text.draw()
     
     def _draw_selected_info(self):
         if self.selected_character:
             selected_slot = next((s for s in self.character_slots if s.character_id == self.selected_character), None)
             if selected_slot:
-                arcade.draw_text(
-                    f"ВЫБРАН: {selected_slot.name}",
-                    SCREEN_WIDTH // 2, 200,
-                    COLOR_SELECTED, 22,
-                    anchor_x="center", anchor_y="center",
-                    bold=True
-                )
+                # Обновляем заголовок
+                self.selected_title_text.text = f"ВЫБРАН: {selected_slot.name}"
+                self.selected_title_text.draw()
                 
                 # Статистика выбранного персонажа
                 stats = {
@@ -312,23 +369,24 @@ class CharacterLobby(arcade.View):
                     3: ["⚔️ УРОН: НИЗКИЙ", "🛡️ ЗАЩИТА: НИЗКАЯ", "⚡ СКОРОСТЬ: ОЧЕНЬ БЫСТРО"]
                 }
                 
-                for i, stat in enumerate(stats.get(self.selected_character, [])):
-                    arcade.draw_text(
-                        stat,
-                        SCREEN_WIDTH // 2, 160 - i * 25,
-                        arcade.color.LIGHT_GRAY, 16,
-                        anchor_x="center", anchor_y="center"
-                    )
+                current_stats = stats.get(self.selected_character, [])
+                
+                # Обновляем и рисуем статистику
+                for i, stat_text in enumerate(self.stats_texts):
+                    if i < len(current_stats):
+                        stat_text.text = current_stats[i]
+                        stat_text.draw()
+                    else:
+                        # Очищаем лишние строки
+                        stat_text.text = ""
     
     def on_update(self, delta_time):
         self.game_time += delta_time
         
-        # Обновляем частицы
         for particle in self.particles:
             particle['x'] += math.sin(self.game_time * 0.5 + particle['offset']) * 0.5
             particle['y'] += math.cos(self.game_time * 0.3 + particle['offset']) * 0.3
             
-            # Возвращаем частицы если они ушли за границы
             if particle['x'] < 0:
                 particle['x'] = SCREEN_WIDTH
             elif particle['x'] > SCREEN_WIDTH:
@@ -338,7 +396,6 @@ class CharacterLobby(arcade.View):
             elif particle['y'] > SCREEN_HEIGHT:
                 particle['y'] = 0
         
-        # Обновляем состояние кнопок
         for btn in self.buttons:
             btn.is_hovered = (
                 abs(self._mouse_x - btn.center_x) <= btn.width / 2 and
@@ -349,7 +406,6 @@ class CharacterLobby(arcade.View):
         self._mouse_x = x
         self._mouse_y = y
         
-        # Проверяем наведение на слоты персонажей
         for slot in self.character_slots:
             slot.is_hovered = (
                 abs(x - slot.center_x) <= 100 and
@@ -357,33 +413,26 @@ class CharacterLobby(arcade.View):
             )
     
     def on_mouse_press(self, x, y, button, modifiers):
-        # Проверяем клик по слотам персонажей
         for slot in self.character_slots:
             if abs(x - slot.center_x) <= 100 and abs(y - slot.center_y) <= 125:
-                # Снимаем выделение со всех слотов
                 for s in self.character_slots:
                     s.is_selected = False
-                # Выделяем выбранный слот
                 slot.is_selected = True
                 self.selected_character = slot.character_id
                 print(f"Выбран персонаж: {slot.name} (ID: {slot.character_id})")
         
-        # Проверяем клик по кнопкам
-        for btn in self.buttons:
+        for i, btn in enumerate(self.buttons):
             if abs(x - btn.center_x) <= btn.width / 2 and abs(y - btn.center_y) <= btn.height / 2:
                 if btn.label == "НАЧАТЬ ИГРУ":
                     if self.selected_character:
                         print(f"Запуск игры с персонажем ID: {self.selected_character}")
-                        # Здесь будет переход на основную карту
                     else:
                         print("Сначала выберите персонажа!")
                 elif btn.label == "НАЗАД":
                     print("Возврат в стартовое меню...")
-                    # Здесь будет переход в стартовое меню
     
     def on_key_press(self, key, modifiers):
         if key == arcade.key.LEFT:
-            # Выбор предыдущего персонажа
             if self.selected_character:
                 new_id = self.selected_character - 1
                 if new_id < 1:
@@ -391,7 +440,6 @@ class CharacterLobby(arcade.View):
                 self._select_character(new_id)
         
         elif key == arcade.key.RIGHT:
-            # Выбор следующего персонажа
             if self.selected_character:
                 new_id = self.selected_character + 1
                 if new_id > len(self.character_slots):
@@ -399,18 +447,25 @@ class CharacterLobby(arcade.View):
                 self._select_character(new_id)
         
         elif key == arcade.key.SPACE:
-            # Подтверждение выбора - запуск игры
             if self.selected_character:
                 print(f"Запуск игры с персонажем ID: {self.selected_character}")
-                # Здесь будет переход на основную карту
         
         elif key == arcade.key.ESCAPE:
-            # Возврат в стартовое меню
             print("Возврат в стартовое меню...")
-            # Здесь будет переход в стартовое меню
+    
     def _select_character(self, character_id):
-        """Выбирает персонажа по ID"""
         for slot in self.character_slots:
             slot.is_selected = (slot.character_id == character_id)
         self.selected_character = character_id
         print(f"Выбран персонаж ID: {character_id}")
+
+
+def main():
+    window = arcade.Window(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE)
+    lobby_view = CharacterLobbyView()
+    window.show_view(lobby_view)
+    arcade.run()
+
+
+if __name__ == "__main__":
+    main()
