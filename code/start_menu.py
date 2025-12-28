@@ -34,6 +34,17 @@ class StartManuView(arcade.View):
         )
         """
 
+        if self.window.user_settings["fullscreen"] == True:
+            self.set_fullscreen()
+
+    def set_fullscreen(self):
+        self.window.set_fullscreen(not self.window.fullscreen)
+
+        if self.window.fullscreen:
+            self.logo_sprite.center_y = WINDOW_HEIGHT + 70
+        else:
+            self.logo_sprite.center_y = WINDOW_HEIGHT - 100
+
     def on_click_switch_button(self, event):
         print("foo")
 
@@ -67,7 +78,10 @@ class StartManuView(arcade.View):
                 self.logo_sprite.center_y = WINDOW_HEIGHT + 70
             else:
                 self.logo_sprite.center_y = WINDOW_HEIGHT - 100
-
+            self.window.user_settings["fullscreen"] = not self.window.user_settings["fullscreen"]
+            with open("code/settings.json", "w", encoding="utf-8") as f:
+                json.dump(self.window.user_settings, f, indent=4, ensure_ascii=False)
+            print(self.window.user_settings)
 
     def on_key_release(self, key, modifiers):
         pass

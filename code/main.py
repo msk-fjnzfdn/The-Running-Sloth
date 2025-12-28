@@ -4,7 +4,9 @@ from start_menu import *
 class GameMainWindow(arcade.Window):
     def __init__(self, WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_TITLE):
         super().__init__(WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_TITLE)
-
+        with open("code/settings.json", "r", encoding="utf-8") as f:
+            self.user_settings = json.load(f)
+        print(self.user_settings)
 
     def setup(self):
         pass
