@@ -1,18 +1,15 @@
 import arcade
 import math
 import random
-from LobbySlot import (
-    SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE,
-    COLOR_BACKGROUND, COLOR_HIGHLIGHT, COLOR_UI_TEXT,
-    COLOR_SELECTED, COLOR_BUTTON_DEFAULT,
-    LobbySlot
-)
+from LobbySlot import *
 
 
 class MainLobby(arcade.View):
-    def __init__(self):
+    def __init__(self, start_menu_view_obj):
         super().__init__()
         
+        self.start_menu_view_obj = start_menu_view_obj
+
         # Слоты персонажей
         self.character_slots = []
         self.selected_character = None
@@ -362,6 +359,7 @@ class MainLobby(arcade.View):
                     else:
                         print("Сначала выберите персонажа!")
                 elif btn.label == "НАЗАД":
+                    self.window.show_view(self.start_menu_view_obj)
                     print("Возврат в стартовое меню...")
     
     def on_key_press(self, key, modifiers):

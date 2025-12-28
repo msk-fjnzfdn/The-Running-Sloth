@@ -6,6 +6,6 @@ import math
 import random
 import json
 
-WINDOW_WIDTH = 900
-WINDOW_HEIGHT = 700
+WINDOW_WIDTH = 1200
+WINDOW_HEIGHT = 800
 WINDOW_TITLE = "The running sloth"

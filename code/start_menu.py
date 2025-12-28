@@ -1,7 +1,8 @@
 from constants import *
+from MainLobby import *
 
 
-class StartManuView(arcade.View):
+class StartMenuView(arcade.View):
     def __init__(self):
         super().__init__()
         self.background_color = (128, 128, 128)
@@ -46,7 +47,8 @@ class StartManuView(arcade.View):
             self.logo_sprite.center_y = WINDOW_HEIGHT - 100
 
     def on_click_switch_button(self, event):
-        print("foo")
+        game = MainLobby(self)
+        self.window.show_view(game)
 
     def on_update(self, delta_time):
         if self.circle_radius[0] >= min(self.height, self.width):
