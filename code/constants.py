@@ -4,6 +4,7 @@ from pyglet.image import load as pyglet_load
 import arcade.gui
 import math
 import random
+import json
 
 WINDOW_WIDTH = 900
 WINDOW_HEIGHT = 700
