@@ -7,7 +7,7 @@ class StartManuView(arcade.View):
         self.background_color = (128, 128, 128)
         self.start_radius = 50
         self.circle_change = 1
-        self.colors = [(128, 128, 128), (129, 129, 129)]
+        self.colors = [(128, 128, 128), (130, 130, 130)]
         self.logo_texture = arcade.load_texture("assets/pictures/trs_name.png")
         self.logo_sprite = arcade.Sprite(self.logo_texture, scale=1)
         self.logo_sprite.center_x = 220
@@ -58,7 +58,7 @@ class StartManuView(arcade.View):
         if self.circle_radius[-1] >= self.start_radius:
             self.circle_radius.append(0)
             color = (
-                128, 128, 128) if self.colors[-1] == (129, 129, 129) else (129, 129, 129)
+                128, 128, 128) if self.colors[-1] == (130, 130, 130) else (130, 130, 130)
             self.colors.append(color)
 
     def on_draw(self):
