@@ -38,8 +38,8 @@ class LobbySlot:
         self.sprite = None
         if self.character_id == 1 and self.is_unlocked:
             # Проверяем существование файла
-            if os.path.exists("HA.png"):
-                self.sprite = arcade.Sprite("HA.png", scale=1.4)
+            if os.path.exists("assets/resource_packs/default/alchimic/Default_alchimic_png.png"):
+                self.sprite = arcade.Sprite("assets/resource_packs/default/alchimic/Default_alchimic_png.png", scale=1.4)
             else:
                 # Если файл не найден, создаем текстовую метку
                 print("Внимание: файл HA.png не найден!")
