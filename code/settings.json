@@ -1,6 +1,7 @@
 {
     "name": "The running sloath",
-    "version": "1.2.7",
+    "version": "1.3.7",
     "settings": [],
-    "fullscreen": false
+    "fullscreen": false,
+    "saved game": false
 }
