@@ -27,13 +27,6 @@ class StartMenuView(arcade.View):
             anchor_y="center_y",
             child=self.switch_menu_button,
         )
-        """
-        self.camera = arcade.Camera2D(
-            position=(0, 0),
-            projection=LRBT(left=0, right=WINDOW_WIDTH, bottom=0, top=WINDOW_HEIGHT),
-            viewport=self.window.rect
-        )
-        """
 
         if self.window.user_settings["fullscreen"] == True:
             self.set_fullscreen()
@@ -45,6 +38,10 @@ class StartMenuView(arcade.View):
             self.logo_sprite.center_y = WINDOW_HEIGHT + 70
         else:
             self.logo_sprite.center_y = WINDOW_HEIGHT - 100
+        self.window.user_settings["fullscreen"] = not self.window.user_settings["fullscreen"]
+        with open("code/settings.json", "w", encoding="utf-8") as f:
+            json.dump(self.window.user_settings, f, indent=4, ensure_ascii=False)
+        print(self.window.user_settings)
 
     def on_click_switch_button(self, event):
         game = MainLobby(self)
@@ -72,18 +69,7 @@ class StartMenuView(arcade.View):
 
     def on_key_press(self, key, modifiers):
         if key == arcade.key.F11:
-            #game = StartManuView1()
-            #self.window.show_view(game)
-            self.window.set_fullscreen(not self.window.fullscreen)
-
-            if self.window.fullscreen:
-                self.logo_sprite.center_y = WINDOW_HEIGHT + 70
-            else:
-                self.logo_sprite.center_y = WINDOW_HEIGHT - 100
-            self.window.user_settings["fullscreen"] = not self.window.user_settings["fullscreen"]
-            with open("code/settings.json", "w", encoding="utf-8") as f:
-                json.dump(self.window.user_settings, f, indent=4, ensure_ascii=False)
-            print(self.window.user_settings)
+            self.set_fullscreen()
 
     def on_key_release(self, key, modifiers):
         pass
