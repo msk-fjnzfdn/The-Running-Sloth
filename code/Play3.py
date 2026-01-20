@@ -55,25 +55,13 @@ class PlayView(arcade.View):
         map_name = "forest_map.tmx"
 
         # Список возможных путей
-        possible_paths = [
-            map_name,
-            f"pictures/{map_name}",
-            f"assets/pictures/{map_name}",
-            f"assets/{map_name}",
-            "forest_map.tmx",
-            "maps/forest_map.tmx",
-            "code/forest_map.tmx"
-        ]
+        possible_paths = "code/forest_map.tmx"
 
         tiled_map = None
 
-        for path in possible_paths:
-            try:
-                tiled_map = arcade.load_tilemap(path, scaling=TILE_SCALING)
-                print(f"Карта успешно загружена из: {path}")
-                break
-            except Exception:
-                continue
+        tiled_map = arcade.load_tilemap(possible_paths, scaling=TILE_SCALING)
+        print(f"Карта успешно загружена из: {possible_paths}")
+
 
         try:
             self.wall_list = tiled_map.sprite_lists["walls"]

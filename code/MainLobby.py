@@ -68,8 +68,9 @@ class MainLobby(arcade.View):
                 self.music_volume = self.user_settings["music_volume"]    
             else:
                 self.music_volume = 0.3
-        except:
+        except Exception:
             self.music_volume = 0.3
+        print(f"Подгружена громкость музыки: {self.music_volume}")
     
     def save_settings(self):
         with open("code/settings.json", "w", encoding="utf-8") as f:
@@ -108,6 +109,7 @@ class MainLobby(arcade.View):
             )
     
     def setup(self):
+        self.load_settings()
         # Создаем слоты для персонажей
         slot_positions = [
             (SCREEN_WIDTH * 0.22, SCREEN_HEIGHT * 0.45, 1, "Зориан", "Алхимик", True),
@@ -165,7 +167,7 @@ class MainLobby(arcade.View):
                 if os.path.exists(path):
                     self.lobby_music = arcade.load_sound(path)
                     break
-            
+
             if self.lobby_music:
                 print(f"Музыка 'Лобби музыка' загружена (громкость: {self.music_volume})")
             else:
