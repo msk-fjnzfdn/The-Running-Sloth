@@ -17,7 +17,7 @@ class StartMenuView(arcade.View):
         self.manager = arcade.gui.UIManager()
 
         self.switch_menu_button = arcade.gui.UIFlatButton(
-            text="Pause", width=250)
+            text="Game", width=250)
 
         self.switch_menu_button.on_click = self.on_click_switch_button
 
@@ -35,9 +35,9 @@ class StartMenuView(arcade.View):
         self.window.set_fullscreen(not self.window.fullscreen)
 
         if self.window.fullscreen:
-            self.logo_sprite.center_y = WINDOW_HEIGHT + 70
+            self.logo_sprite.center_y = self.height - 100
         else:
-            self.logo_sprite.center_y = WINDOW_HEIGHT - 100
+            self.logo_sprite.center_y = self.height - 100
         self.window.user_settings["fullscreen"] = not self.window.user_settings["fullscreen"]
         with open("code/settings.json", "w", encoding="utf-8") as f:
             json.dump(self.window.user_settings, f, indent=4, ensure_ascii=False)

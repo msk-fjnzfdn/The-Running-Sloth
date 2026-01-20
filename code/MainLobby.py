@@ -13,11 +13,12 @@ from Add_To_Lobby import LobbyUIManager
 
 
 class MainLobby(arcade.View):
-    def __init__(self):
+    def __init__(self, obj):
         super().__init__()
         
+        self.parent = obj
+
         # Загрузка настроек
-        self.user_settings = {}
         self.load_settings()
         
         # Переменные для масштабирования
@@ -59,26 +60,20 @@ class MainLobby(arcade.View):
     
     def load_settings(self):
         try:
-            if os.path.exists("settings.json"):
-                with open("settings.json", "r", encoding="utf-8") as f:
-                    self.user_settings = json.load(f)
+            with open("code/settings.json", "r", encoding="utf-8") as f:
+                self.user_settings = json.load(f)
                     
-                # Загружаем сохраненную громкость музыки
-                if "music_volume" in self.user_settings:
-                    self.music_volume = self.user_settings["music_volume"]
+            # Загружаем сохраненную громкость музыки
+            if "music_volume" in self.user_settings:
+                self.music_volume = self.user_settings["music_volume"]    
             else:
-                self.user_settings = {"fullscreen": False, "music_volume": 0.3}
                 self.music_volume = 0.3
         except:
-            self.user_settings = {"fullscreen": False, "music_volume": 0.3}
             self.music_volume = 0.3
     
     def save_settings(self):
-        try:
-            with open("settings.json", "w", encoding="utf-8") as f:
-                json.dump(self.user_settings, f, indent=4, ensure_ascii=False)
-        except:
-            pass
+        with open("code/settings.json", "w", encoding="utf-8") as f:
+            json.dump(self.user_settings, f, indent=4, ensure_ascii=False)
     
     def update_all_positions(self):
         window_width = self.window.width
@@ -164,7 +159,7 @@ class MainLobby(arcade.View):
         try:
             # Пробуем разные пути к файлу
             music_paths = [
-                "Лобби Cat.mp3"
+                "code/lobby_music.mp3"
             ]
             for path in music_paths:
                 if os.path.exists(path):
@@ -372,6 +367,7 @@ class MainLobby(arcade.View):
                         print("Сначала выберите персонажа!")
                 elif btn.label == "НАЗАД":
                     print("Возврат в стартовое меню...")
+                    self.window.show_view(self.parent)
     
     def on_key_press(self, key, modifiers):
         if key == arcade.key.LEFT:
@@ -449,19 +445,3 @@ class MainLobby(arcade.View):
             slot.is_selected = (slot.character_id == character_id and slot.is_unlocked)
         self.selected_character = character_id
         print(f"Выбран персонаж ID: {character_id}")
-
-def main():
-    window = arcade.Window(
-        SCREEN_WIDTH, SCREEN_HEIGHT,
-        SCREEN_TITLE,
-        resizable=True
-    )
-    
-    window.set_minimum_size(1200, 800)
-    
-    lobby_view = MainLobby()
-    window.show_view(lobby_view)
-    arcade.run()
-
-if __name__ == "__main__":
-    main()
