@@ -256,21 +256,3 @@ class PlayView(arcade.View):
     def on_resize(self, width, height):
         """Обработка изменения размера окна"""
         super().on_resize(width, height)
-
-
-def main():
-    window = arcade.Window(
-        SCREEN_WIDTH, SCREEN_HEIGHT,
-        SCREEN_TITLE,
-        resizable=True
-    )
-
-    window.set_minimum_size(800, 600)
-
-    play_view = PlayView(character_id=1)
-    window.show_view(play_view)
-    arcade.run()
-
-
-if __name__ == "__main__":
-    main()
