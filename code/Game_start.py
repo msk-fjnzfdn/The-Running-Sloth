@@ -1,13 +1,5 @@
-import arcade
-
-SCREEN_WIDTH = 1200
-SCREEN_HEIGHT = 800
-SCREEN_TITLE = "The Running Sloth - Game"
-TILE_SCALING = 0.5
-PLAYER_MOVEMENT_SPEED = 5
-
-# Цвета для игры
-COLOR_BACKGROUND = (20, 30, 40, 0)
+from id1_character import *
+from constants import *
 
 
 class PlayView(arcade.View):
@@ -33,6 +25,24 @@ class PlayView(arcade.View):
         self.up_pressed = False
         self.down_pressed = False
 
+        self.world_camera = arcade.camera.Camera2D()
+        self.gui_camera = arcade.camera.Camera2D()
+
+        self.camera_shake = arcade.camera.grips.ScreenShake2D(
+            self.world_camera.view_data,  # Трястись будет только то, что попадает в объектив мировой камеры
+            max_amplitude=15.0,  # Параметры, с которыми можно поиграть
+            acceleration_duration=0.1,
+            falloff_time=0.5,
+            shake_frequency=10.0,
+        )
+
+        self.tiled_map = None
+
+        self.world_width = SCREEN_WIDTH
+        self.world_height = SCREEN_HEIGHT
+
+        self.keys_pressed = set()
+
         self.setup()
 
     def setup(self):
@@ -55,31 +65,50 @@ class PlayView(arcade.View):
         map_name = "forest_map.tmx"
 
         # Список возможных путей
-        possible_paths = "code/forest_map.tmx"
+        possible_paths = [
+            "assets/maps/forest_map.tmx",
+            "assets/pictures/forest_map.tmx",
+            map_name,
+            f"pictures/{map_name}",
+            f"assets/pictures/{map_name}",
+            f"assets/{map_name}",
+            "forest_map.tmx",
+            "maps/forest_map.tmx",
+            "code/forest_map.tmx"
+        ]
 
-        tiled_map = None
-
-        tiled_map = arcade.load_tilemap(possible_paths, scaling=TILE_SCALING)
-        print(f"Карта успешно загружена из: {possible_paths}")
-
+        for path in possible_paths:
+            try:
+                self.tiled_map = arcade.load_tilemap(path, scaling=TILE_SCALING)
+                print(f"Карта успешно загружена из: {path}")
+                break
+            except Exception:
+                print("❗Ошибка загрузки карты")
 
         try:
-            self.wall_list = tiled_map.sprite_lists["walls"]
-            self.chests_list = tiled_map.sprite_lists["chest"]
-            self.exit_list = tiled_map.sprite_lists["exit"]
-            self.collision_list = tiled_map.sprite_lists["collision"]
+            self.wall_list = self.tiled_map.sprite_lists["walls"]
+            self.chests_list = self.tiled_map.sprite_lists["chest"]
+            self.exit_list = self.tiled_map.sprite_lists["exit"]
+            self.collision_list = self.tiled_map.sprite_lists["collision"]
         except KeyError as e:
-            print(f"Ошибка: В карте TMX отсутствует слой {e}")
+            print(f"❗Ошибка: В карте TMX отсутствует слой {e}")
+
+        try:
+            self.world_width = int(self.tiled_map.width * self.tiled_map.tile_width * TILE_SCALING)
+            self.world_height = int(self.tiled_map.height * self.tiled_map.tile_height * TILE_SCALING)
+            print(f"Границы мир: {self.world_width} x {self.world_height}")
+        except Exception as e:
+            print(f"❗Ошибка загрузки границ карты: {e}")
 
         # Ищем стартовую позицию игрока
-        if "PlayerStart" in tiled_map.sprite_lists and tiled_map.sprite_lists["PlayerStart"]:
-            start_pos = tiled_map.sprite_lists["PlayerStart"][0]
+        if "PlayerStart" in self.tiled_map.sprite_lists and self.tiled_map.sprite_lists["PlayerStart"]:
+            start_pos = self.tiled_map.sprite_lists["PlayerStart"][0]
             start_x = start_pos.center_x
             start_y = start_pos.center_y
-        else:
-            # Стартовая позиция по умолчанию
-            start_x = 100
-            start_y = 100
+
+        start_x = 1500
+        start_y = 1500
+        print(f"Координаты по умолчанию установлены: x({start_x}) y({start_y})")
 
         # Создаём игрока
         self._create_player(start_x, start_y)
@@ -91,41 +120,7 @@ class PlayView(arcade.View):
 
     def _create_player(self, start_x, start_y):
         """Создание спрайта игрока"""
-        try:
-            # Пробуем разные пути к спрайту игрока
-            possible_paths = [
-                "assets/resource_packs/default/alchimic/НА.png",
-                "НА.png",
-                "assets/НА.png",
-                "assets/resource_packs/default/alchimic/alchimic.png",
-                "alchimic.png"
-            ]
-
-            sprite_loaded = False
-
-            for path in possible_paths:
-                try:
-                    self.player_sprite = arcade.Sprite(path, scale=0.5)
-                    sprite_loaded = True
-                    print(f"Спрайт игрока успешно загружен из: {path}")
-                    break
-                except Exception:
-                    continue
-
-            if not sprite_loaded:
-                colors = {
-                    1: arcade.color.BLUE,
-                    2: arcade.color.PINK,
-                    3: arcade.color.GREEN
-                }
-                player_color = colors.get(self.character_id, arcade.color.RED)
-                self.player_sprite = arcade.SpriteCircle(30, player_color)
-                print("Картинка не найдена. Используется запасной цветной спрайт")
-
-        except Exception as e:
-            print(f"Критическая ошибка создания игрока: {e}")
-            self.player_sprite = arcade.SpriteCircle(30, arcade.color.BLUE)
-
+        self.player_sprite = Hero()
         self.player_sprite.center_x = start_x
         self.player_sprite.center_y = start_y
         self.player_list.append(self.player_sprite)
@@ -139,21 +134,15 @@ class PlayView(arcade.View):
         """Отрисовка игры"""
         self.clear()
 
-        # Рисуем задний фон (если есть)
-        if self.background_list:
-            self.background_list.draw()
 
-        # Рисуем стены
+        self.camera_shake.update_camera()  # Запчасть от тряски камеры
+        self.world_camera.use()
         self.wall_list.draw()
-
-        # Рисуем сундуки
-        self.chests_list.draw()
-
-        # Рисуем выход
-        self.exit_list.draw()
-
-        # Рисуем игрока
         self.player_list.draw()
+        #self.bomb_list.draw()
+        self.camera_shake.readjust_camera()
+
+        self.gui_camera.use()
 
         # Рисуем UI
         self._draw_ui()
@@ -161,44 +150,60 @@ class PlayView(arcade.View):
     def _draw_ui(self):
         """Отрисовка интерфейса"""
         # Информация об управлении
-        arcade.draw_text(
+        self.a = arcade.Text(
             "Управление: Стрелки - движение, ESC - в лобби, E - использовать выход",
             10, SCREEN_HEIGHT - 30,
             arcade.color.LIGHT_GRAY, 16
         )
-
+        self.a.draw()
         # Информация о персонаже
         character_names = {1: "Зориан", 2: "???", 3: "???"}
         character_name = character_names.get(self.character_id, "Неизвестный")
 
-        arcade.draw_text(
+        self.b = arcade.Text(
             f"Персонаж: {character_name}",
             10, SCREEN_HEIGHT - 60,
             arcade.color.WHITE, 20,
             bold=True
         )
-
+        self.b.draw()
         # Счётчик сундуков
-        arcade.draw_text(
+        self.c = arcade.Text(
             f"Сундуков: {len(self.chests_list)}",
             SCREEN_WIDTH - 150, SCREEN_HEIGHT - 60,
             arcade.color.GOLD, 20
         )
-
+        self.c.draw()
     def on_update(self, delta_time):
+        self.camera_shake.update(delta_time)
+
+        self.player_list.update(delta_time, self.keys_pressed)
+
+        self.player_list.update_animation()
+
+        position = (
+            self.player_sprite.center_x,
+            self.player_sprite.center_y
+        )
+        self.world_camera.position = arcade.math.lerp_2d(  # Изменяем позицию камеры
+            self.world_camera.position,
+            position,
+            0.15,  # Плавность следования камеры
+        )
+        
         """Обновление состояния каждый кадр"""
         # Обновляем движение игрока
         self.player_sprite.change_x = 0
         self.player_sprite.change_y = 0
 
         if self.left_pressed and not self.right_pressed:
-            self.player_sprite.change_x = -PLAYER_MOVEMENT_SPEED
+            self.player_sprite.change_x = -self.player_sprite.speed
         if self.right_pressed and not self.left_pressed:
-            self.player_sprite.change_x = PLAYER_MOVEMENT_SPEED
+            self.player_sprite.change_x = self.player_sprite.speed
         if self.up_pressed and not self.down_pressed:
-            self.player_sprite.change_y = PLAYER_MOVEMENT_SPEED
+            self.player_sprite.change_y = self.player_sprite.speed
         if self.down_pressed and not self.up_pressed:
-            self.player_sprite.change_y = -PLAYER_MOVEMENT_SPEED
+            self.player_sprite.change_y = -self.player_sprite.speed
 
         # Обновляем физику
         if self.physics_engine:
@@ -212,14 +217,18 @@ class PlayView(arcade.View):
 
     def on_key_press(self, key, modifiers):
         """Обработка нажатия клавиш"""
-        if key == arcade.key.LEFT:
+        if key == arcade.key.A or key == arcade.key.LEFT:
             self.left_pressed = True
-        elif key == arcade.key.RIGHT:
+            self.keys_pressed.add(key)
+        elif key == arcade.key.D or key == arcade.key.RIGHT:
             self.right_pressed = True
-        elif key == arcade.key.UP:
+            self.keys_pressed.add(key)
+        elif key == arcade.key.W or key == arcade.key.UP:
             self.up_pressed = True
-        elif key == arcade.key.DOWN:
+            self.keys_pressed.add(key)
+        elif key == arcade.key.S or key == arcade.key.DOWN:
             self.down_pressed = True
+            self.keys_pressed.add(key)
         elif key == arcade.key.F11:
             # Полноэкранный режим
             self.window.set_fullscreen(not self.window.fullscreen)
@@ -232,15 +241,19 @@ class PlayView(arcade.View):
 
     def on_key_release(self, key, modifiers):
         """Обработка отпускания клавиш"""
-        if key == arcade.key.LEFT:
+        if key == arcade.key.A or key == arcade.key.LEFT:
             self.left_pressed = False
-        elif key == arcade.key.RIGHT:
+            if key in self.keys_pressed:
+                self.keys_pressed.remove(key)
+        elif key == arcade.key.D or key == arcade.key.RIGHT:
             self.right_pressed = False
-        elif key == arcade.key.UP:
+            if key in self.keys_pressed:
+                self.keys_pressed.remove(key)
+        elif key == arcade.key.W or key == arcade.key.UP:
             self.up_pressed = False
-        elif key == arcade.key.DOWN:
+            if key in self.keys_pressed:
+                self.keys_pressed.remove(key)
+        elif key == arcade.key.S or key == arcade.key.DOWN:
             self.down_pressed = False
-
-    def on_resize(self, width, height):
-        """Обработка изменения размера окна"""
-        super().on_resize(width, height)
+            if key in self.keys_pressed:
+                self.keys_pressed.remove(key)

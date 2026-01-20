@@ -1,23 +1,8 @@
-import arcade
-import os
+from constants import *
+from id1_character import *
 
-SCREEN_WIDTH = 1200
-SCREEN_HEIGHT = 800
+
 SCREEN_TITLE = "The Running Sloth - Character Lobby"
-
-# Цвета для лобби
-COLOR_BACKGROUND = (20, 15, 30)
-COLOR_PLATFORM = (40, 35, 60)
-COLOR_PLATFORM_LIGHT = (60, 55, 90)
-COLOR_HIGHLIGHT = (100, 200, 255)
-COLOR_UI_TEXT = (240, 240, 200)
-COLOR_SELECTED = (255, 215, 0)
-COLOR_UNSELECTED = (150, 150, 180)
-COLOR_SELECTION_RECT = (255, 215, 0, 80)
-COLOR_DISABLED = (80, 80, 100, 150)
-COLOR_LOCKED = (60, 60, 80)
-COLOR_BUTTON_DEFAULT = (100, 100, 100)
-
 
 class LobbySlot:
     def __init__(self, x, y, character_id, name, description, is_unlocked=True):
@@ -33,6 +18,7 @@ class LobbySlot:
         self.is_unlocked = is_unlocked
         self.color = COLOR_UNSELECTED if is_unlocked else COLOR_LOCKED
         self.scale_factor = 1.0  # Фактор масштабирования
+        self.keys_pressed = ()
         
         # SpriteList для отрисовки спрайта
         self.sprite_list = arcade.SpriteList()
@@ -40,12 +26,14 @@ class LobbySlot:
         # Загружаем спрайт для персонажа
         self.sprite = None
         if self.character_id == 1 and self.is_unlocked:
+            """
             # Проверяем существование файла HA.png
             possible_paths = [
                 "HA.png",  # В корневой папке
                 "assets/HA.png",  # В папке assets
                 "assets/resource_packs/default/alchimic/HA.png",  # В папке с ресурсами
-                "assets/resource_packs/default/alchimic/Default_alchimic_png.png"  # Старый путь
+                "assets/resource_packs/default/alchimic/Default_alchimic_png.png",  # Старый путь
+                "assets/resource_packs/default/alchimic/static/Default_alchimic_png.png"
             ]
             
             sprite_loaded = False
@@ -60,19 +48,21 @@ class LobbySlot:
                         print(f"Ошибка загрузки {path}: {e}")
             
             if not sprite_loaded:
-                print("Внимание: файл HA.png не найден! Будут использованы запасные варианты.")
+                print("Внимание: файл alchimic.png не найден! Будут использованы запасные варианты.")
                 self.sprite = None
+            """
+            self.sprite = Hero()
         else:
             self.sprite = None
-        
+
         if self.sprite:
             self.sprite.center_x = self.center_x
             self.sprite.center_y = self.center_y + 120
             self.sprite_list.append(self.sprite)
         
-        # Текст "HA" для первого персонажа (если нет спрайта)
+        # Текст "ZA" для первого персонажа (если нет спрайта)
         self.ha_text = arcade.Text(
-            "HA",
+            "ZA",
             self.center_x, self.center_y + 40,
             arcade.color.WHITE, 36,
             anchor_x="center", anchor_y="center",
@@ -136,7 +126,7 @@ class LobbySlot:
             3: (150, 200, 100)    # Зеленый для третьего персонажа
         }
     
-    def update_position(self, scale_factor, offset_x=0, offset_y=0):
+    def update_position(self, scale_factor, offset_x=0, offset_y=0, delta_time: float = 1/60):
         """Обновляет позиции всех элементов слота в соответствии с масштабом и смещением"""
         self.scale_factor = scale_factor
         
@@ -149,6 +139,8 @@ class LobbySlot:
             self.sprite.center_x = self.center_x
             self.sprite.center_y = self.center_y + 120 * scale_factor
             self.sprite.scale = 1.4 * scale_factor
+            self.sprite_list.update(delta_time, self.keys_pressed)
+            self.sprite_list.update_animation()
         
         # Обновляем позиции текстовых элементов
         self.ha_text.position = (self.center_x, self.center_y + 40 * scale_factor)

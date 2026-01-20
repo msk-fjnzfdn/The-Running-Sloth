@@ -1,15 +1,8 @@
-import arcade
-import math
-import random
-import json
-import os
-from LobbySlot import (
-    SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE,
-    COLOR_BACKGROUND, COLOR_HIGHLIGHT, COLOR_UI_TEXT,
-    COLOR_SELECTED, COLOR_BUTTON_DEFAULT,
-    LobbySlot
-)
+from constants import *
+from LobbySlot import *
 from Add_To_Lobby import LobbyUIManager
+from Game_start import *
+from id1_character import *
 
 
 class MainLobby(arcade.View):
@@ -161,7 +154,7 @@ class MainLobby(arcade.View):
         try:
             # Пробуем разные пути к файлу
             music_paths = [
-                "code/lobby_music.mp3"
+                "assets/music/lobby_music.mp3"
             ]
             for path in music_paths:
                 if os.path.exists(path):
@@ -365,6 +358,8 @@ class MainLobby(arcade.View):
                 if btn.label == "НАЧАТЬ ИГРУ":
                     if self.selected_character:
                         print(f"Запуск игры с персонажем ID: {self.selected_character}")
+                        self.play_view = PlayView(character_id=1)
+                        self.window.show_view(self.play_view)
                     else:
                         print("Сначала выберите персонажа!")
                 elif btn.label == "НАЗАД":
@@ -409,7 +404,7 @@ class MainLobby(arcade.View):
             if self.music_volume < 1.0:
                 self.music_volume = min(1.0, self.music_volume + 0.1)
                 print(f"Громкость музыки: {int(self.music_volume * 100)}%")
-                self.user_settings["music_volume"] = self.music_volume
+                self.user_settings["music_volume"] = float(int(self.music_volume * 100)) / 100
                 self.save_settings()
                 # Обновляем громкость играющей музыки
                 self._update_music_volume()
@@ -418,7 +413,7 @@ class MainLobby(arcade.View):
             if self.music_volume > 0.0:
                 self.music_volume = max(0.0, self.music_volume - 0.1)
                 print(f"Громкость музыки: {int(self.music_volume * 100)}%")
-                self.user_settings["music_volume"] = self.music_volume
+                self.user_settings["music_volume"] = float(int(self.music_volume * 100)) / 100
                 self.save_settings()
                 # Обновляем громкость играющей музыки
                 self._update_music_volume()

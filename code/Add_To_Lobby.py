@@ -1,5 +1,4 @@
-import arcade
-from LobbySlot import COLOR_SELECTED, COLOR_BUTTON_DEFAULT
+from constants import *
 
 
 class LobbyUIManager:
