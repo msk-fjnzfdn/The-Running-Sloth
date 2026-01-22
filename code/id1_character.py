@@ -9,8 +9,8 @@ class Hero(arcade.Sprite):
         super().__init__()
         
         # Основные характеристики
-        self.scale = 0.4
-        self.speed = 5
+        self.scale = 0.5
+        self.speed = 7
         self.health = 25
         self.damage = 100
         
