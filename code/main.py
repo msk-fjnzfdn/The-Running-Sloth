@@ -26,7 +26,7 @@ def main():
     window = GameMainWindow(WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_TITLE)
     window.set_icon(pyglet_load("assets/pictures/trs_logo.png"))
     start_menu = StartMenuView()
-    #start_menu = PlayView(character_id=1)
+    #start_menu = PlayView()
     window.show_view(start_menu)
     arcade.run()
 
