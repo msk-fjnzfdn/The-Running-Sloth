@@ -3,8 +3,11 @@ from constants import *
 
 
 class PlayView(arcade.View):
-    def __init__(self, character_id=1):
+    def __init__(self, character_id=1, obj=None):
         super().__init__()
+
+        self.parent = obj
+
         self.character_id = character_id
 
         # Списки спрайтов
@@ -252,6 +255,9 @@ class PlayView(arcade.View):
             if exit_hit_list:
                 pass
                 # Здесь можно добавить переход на следующий уровень
+        elif key == arcade.key.ESCAPE:
+            self.window.show_view(self.parent)
+
 
     def on_key_release(self, key, modifiers):
         """

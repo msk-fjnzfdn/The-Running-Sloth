@@ -45,7 +45,7 @@ class StartMenuView(arcade.View):
         print(self.window.user_settings)
 
     def on_click_switch_button(self, event):
-        game = MainLobby(self)
+        game = MainLobby(obj=self)
         self.window.show_view(game)
 
     def on_update(self, delta_time):

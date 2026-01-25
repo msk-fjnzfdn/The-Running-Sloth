@@ -6,7 +6,7 @@ from id1_character import *
 
 
 class MainLobby(arcade.View):
-    def __init__(self, obj):
+    def __init__(self, obj=None):
         super().__init__()
 
         self.parent = obj
@@ -364,7 +364,7 @@ class MainLobby(arcade.View):
             if abs(x - btn.center_x) <= btn.width / 2 and abs(y - btn.center_y) <= btn.height / 2:
                 if btn.label == "НАЧАТЬ ИГРУ":
                     if self.selected_character:
-                        self.play_view = PlayView(character_id=1)
+                        self.play_view = PlayView(character_id=1, obj=self)
                         self.window.show_view(self.play_view)
                     else:
                         pass
