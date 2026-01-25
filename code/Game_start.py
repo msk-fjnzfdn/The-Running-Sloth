@@ -105,9 +105,9 @@ class PlayView(arcade.View):
             start_pos = self.tiled_map.sprite_lists["PlayerStart"][0]
             start_x = start_pos.center_x
             start_y = start_pos.center_y
-
-        start_x = 1500
-        start_y = 1500
+        else:
+            start_x = 1500
+            start_y = 1500
         print(f"Координаты по умолчанию установлены: x({start_x}) y({start_y})")
 
         # Создаём игрока
@@ -139,7 +139,7 @@ class PlayView(arcade.View):
         self.world_camera.use()
         self.wall_list.draw()
         self.player_list.draw()
-        #self.bomb_list.draw()
+        self.chests_list.draw()
         self.camera_shake.readjust_camera()
 
         self.gui_camera.use()

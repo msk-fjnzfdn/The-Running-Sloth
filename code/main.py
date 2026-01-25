@@ -16,7 +16,7 @@ class GameMainWindow(arcade.Window):
         pass
 
     def on_key_press(self, key, modifiers):
-        pass
+        pass   
 
     def on_key_release(self, key, modifiers):
         pass

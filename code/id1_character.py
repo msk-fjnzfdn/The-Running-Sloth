@@ -10,7 +10,7 @@ class Hero(arcade.Sprite):
         
         # Основные характеристики
         self.scale = 0.4
-        self.speed = 5
+        self.speed = 6
         self.health = 25
         self.damage = 100
         
