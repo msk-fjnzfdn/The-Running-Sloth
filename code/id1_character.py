@@ -9,13 +9,8 @@ class Hero(arcade.Sprite):
         super().__init__()
         
         # Основные характеристики
-<<<<<<< HEAD
-        self.scale = 0.5
-        self.speed = 7
-=======
         self.scale = 0.4
         self.speed = 6
->>>>>>> msk-fjnzfdn's-branch
         self.health = 25
         self.damage = 100
         

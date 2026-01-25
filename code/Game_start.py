@@ -139,10 +139,6 @@ class PlayView(arcade.View):
         self.world_camera.use()
         self.wall_list.draw()
         self.player_list.draw()
-<<<<<<< HEAD
-        #self.bomb_list.draw()
-=======
->>>>>>> msk-fjnzfdn's-branch
         self.chests_list.draw()
         self.camera_shake.readjust_camera()
 
