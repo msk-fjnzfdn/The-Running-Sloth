@@ -29,7 +29,8 @@ class PlayView(arcade.View):
         self.gui_camera = arcade.camera.Camera2D()
 
         self.camera_shake = arcade.camera.grips.ScreenShake2D(
-            self.world_camera.view_data,  # Трястись будет только то, что попадает в объектив мировой камеры
+            # Трястись будет только то, что попадает в объектив мировой камеры
+            self.world_camera.view_data,
             max_amplitude=15.0,  # Параметры, с которыми можно поиграть
             acceleration_duration=0.1,
             falloff_time=0.5,
@@ -46,7 +47,9 @@ class PlayView(arcade.View):
         self.setup()
 
     def setup(self):
-        """Настройка игры"""
+        """
+        Настройка игры
+        """
         # Создаём списки спрайтов
         self.player_list = arcade.SpriteList()
         self.wall_list = arcade.SpriteList()
@@ -58,10 +61,10 @@ class PlayView(arcade.View):
         # Загружаем карту
         self._load_map()
 
-        print("Игра загружена! Используйте стрелки для движения.")
-
     def _load_map(self):
-        """Загрузка карты из TMX файла"""
+        """
+        Загрузка карты из TMX файла
+        """
         map_name = "forest_map.tmx"
 
         # Список возможных путей
@@ -79,8 +82,8 @@ class PlayView(arcade.View):
 
         for path in possible_paths:
             try:
-                self.tiled_map = arcade.load_tilemap(path, scaling=TILE_SCALING)
-                print(f"Карта успешно загружена из: {path}")
+                self.tiled_map = arcade.load_tilemap(
+                    path, scaling=TILE_SCALING)
                 break
             except Exception:
                 print("❗Ошибка загрузки карты")
@@ -94,9 +97,10 @@ class PlayView(arcade.View):
             print(f"❗Ошибка: В карте TMX отсутствует слой {e}")
 
         try:
-            self.world_width = int(self.tiled_map.width * self.tiled_map.tile_width * TILE_SCALING)
-            self.world_height = int(self.tiled_map.height * self.tiled_map.tile_height * TILE_SCALING)
-            print(f"Границы мир: {self.world_width} x {self.world_height}")
+            self.world_width = int(
+                self.tiled_map.width * self.tiled_map.tile_width * TILE_SCALING)
+            self.world_height = int(
+                self.tiled_map.height * self.tiled_map.tile_height * TILE_SCALING)
         except Exception as e:
             print(f"❗Ошибка загрузки границ карты: {e}")
 
@@ -108,32 +112,35 @@ class PlayView(arcade.View):
         else:
             start_x = 1500
             start_y = 1500
-        print(f"Координаты по умолчанию установлены: x({start_x}) y({start_y})")
 
         # Создаём игрока
         self._create_player(start_x, start_y)
 
         # Создаём физический движок
         self.physics_engine = arcade.PhysicsEngineSimple(
-        self.player_sprite, self.collision_list
+            self.player_sprite, self.collision_list
         )
 
     def _create_player(self, start_x, start_y):
-        """Создание спрайта игрока"""
+        """
+        Создание спрайта игрока
+        """
         self.player_sprite = Hero()
         self.player_sprite.center_x = start_x
         self.player_sprite.center_y = start_y
         self.player_list.append(self.player_sprite)
 
     def on_show_view(self):
-        """Вызывается при показе View"""
+        """
+        Вызывается при показе View
+        """
         arcade.set_background_color(COLOR_BACKGROUND)
-        print("Игровой экран показан")
 
     def on_draw(self):
-        """Отрисовка игры"""
+        """
+        Отрисовка игры
+        """
         self.clear()
-
 
         self.camera_shake.update_camera()  # Запчасть от тряски камеры
         self.world_camera.use()
@@ -148,7 +155,9 @@ class PlayView(arcade.View):
         self._draw_ui()
 
     def _draw_ui(self):
-        """Отрисовка интерфейса"""
+        """
+        Отрисовка интерфейса
+        """
         # Информация об управлении
         self.a = arcade.Text(
             "Управление: Стрелки - движение, ESC - в лобби, E - использовать выход",
@@ -174,6 +183,7 @@ class PlayView(arcade.View):
             arcade.color.GOLD, 20
         )
         self.c.draw()
+
     def on_update(self, delta_time):
         self.camera_shake.update(delta_time)
 
@@ -190,8 +200,9 @@ class PlayView(arcade.View):
             position,
             0.15,  # Плавность следования камеры
         )
-        
-        """Обновление состояния каждый кадр"""
+
+        # Обновление состояния каждый кадр
+
         # Обновляем движение игрока
         self.player_sprite.change_x = 0
         self.player_sprite.change_y = 0
@@ -210,13 +221,15 @@ class PlayView(arcade.View):
             self.physics_engine.update()
 
         # Проверяем сбор сундуков
-        chest_hit_list = arcade.check_for_collision_with_list(self.player_sprite, self.chests_list)
+        chest_hit_list = arcade.check_for_collision_with_list(
+            self.player_sprite, self.chests_list)
         for chest in chest_hit_list:
-            print(f"Собран сундук на координатах: x({chest.center_x}) y({chest.center_y})")
             chest.remove_from_sprite_lists()
 
     def on_key_press(self, key, modifiers):
-        """Обработка нажатия клавиш"""
+        """
+        Обработка нажатия клавиш
+        """
         if key == arcade.key.A or key == arcade.key.LEFT:
             self.left_pressed = True
             self.keys_pressed.add(key)
@@ -234,13 +247,16 @@ class PlayView(arcade.View):
             self.window.set_fullscreen(not self.window.fullscreen)
         elif key == arcade.key.E:
             # Проверяем, достиг ли игрок выхода
-            exit_hit_list = arcade.check_for_collision_with_list(self.player_sprite, self.exit_list)
+            exit_hit_list = arcade.check_for_collision_with_list(
+                self.player_sprite, self.exit_list)
             if exit_hit_list:
-                print("Выход достигнут!")
+                pass
                 # Здесь можно добавить переход на следующий уровень
 
     def on_key_release(self, key, modifiers):
-        """Обработка отпускания клавиш"""
+        """
+        Обработка отпускания клавиш
+        """
         if key == arcade.key.A or key == arcade.key.LEFT:
             self.left_pressed = False
             if key in self.keys_pressed:

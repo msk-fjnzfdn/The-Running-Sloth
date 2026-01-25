@@ -40,7 +40,8 @@ class StartMenuView(arcade.View):
             self.logo_sprite.center_y = self.height - 100
         self.window.user_settings["fullscreen"] = not self.window.user_settings["fullscreen"]
         with open("code/settings.json", "w", encoding="utf-8") as f:
-            json.dump(self.window.user_settings, f, indent=4, ensure_ascii=False)
+            json.dump(self.window.user_settings, f,
+                      indent=4, ensure_ascii=False)
         print(self.window.user_settings)
 
     def on_click_switch_button(self, event):
@@ -63,7 +64,8 @@ class StartMenuView(arcade.View):
     def on_draw(self):
         self.clear()
         for ind, rad in enumerate(self.circle_radius):
-            arcade.draw_circle_filled(self.width // 2, self.height // 2, rad, self.colors[ind])
+            arcade.draw_circle_filled(
+                self.width // 2, self.height // 2, rad, self.colors[ind])
         arcade.draw_sprite(self.logo_sprite)
         self.manager.draw()
 
