@@ -258,3 +258,4 @@ class PlayView(arcade.View):
             self.down_pressed = False
             if key in self.keys_pressed:
                 self.keys_pressed.remove(key)
+                
