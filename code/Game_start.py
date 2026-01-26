@@ -10,7 +10,6 @@ class PlayView(arcade.View):
         super().__init__()
 
         self.parent = obj
-
         self.character_id = character_id
 
         # Списки спрайтов
@@ -34,32 +33,35 @@ class PlayView(arcade.View):
         self.down_pressed = False
         self.can_attack = True
 
+        # Экран смерти
+        self.is_dead = False
+
         # Шкала здоровья
         self.hp_bar = []
         for i in range(6):
             hp_sprite = arcade.Sprite(
-                f"assets/resource_packs/gui/HP_bar/HP_Bar_{i}.png", center_x=240, center_y=self.window.height - 50, scale=0.6)
+                f"assets/resource_packs/gui/HP_bar/HP_Bar_{i}.png", 
+                center_x=240, 
+                center_y=self.window.height - 50, 
+                scale=0.6
+            )
             self.hp_bar.append(hp_sprite)
 
         self.world_camera = arcade.camera.Camera2D()
         self.gui_camera = arcade.camera.Camera2D()
 
         self.camera_shake = arcade.camera.grips.ScreenShake2D(
-            # Трястись будет только то, что попадает в объектив мировой камеры
             self.world_camera.view_data,
-            max_amplitude=15.0,  # Параметры, с которыми можно поиграть
+            max_amplitude=15.0,
             acceleration_duration=0.1,
             falloff_time=0.5,
             shake_frequency=10.0,
         )
 
         self.shoot_cooldown = 1
-
         self.tiled_map = None
-
         self.world_width = SCREEN_WIDTH
         self.world_height = SCREEN_HEIGHT
-
         self.keys_pressed = set()
 
         self.setup()
@@ -78,6 +80,9 @@ class PlayView(arcade.View):
         self.potion_list = arcade.SpriteList()
         self.effect_list = arcade.SpriteList()
 
+        # Сбрасываем состояние смерти
+        self.is_dead = False
+
         # Загружаем карту
         self._load_map()
 
@@ -87,7 +92,6 @@ class PlayView(arcade.View):
         """
         map_name = "forest_map.tmx"
 
-        # Список возможных путей
         possible_paths = [
             "assets/maps/forest_map.tmx",
             "assets/pictures/forest_map.tmx",
@@ -124,7 +128,6 @@ class PlayView(arcade.View):
         except Exception as e:
             print(f"❗Ошибка загрузки границ карты: {e}")
 
-        # Ищем стартовую позицию игрока
         if "PlayerStart" in self.tiled_map.sprite_lists and self.tiled_map.sprite_lists["PlayerStart"]:
             start_pos = self.tiled_map.sprite_lists["PlayerStart"][0]
             start_x = start_pos.center_x
@@ -133,10 +136,8 @@ class PlayView(arcade.View):
             start_x = 1500
             start_y = 1500
 
-        # Создаём игрока
         self._create_player(start_x, start_y)
 
-        # Создаём физический движок
         self.physics_engine = arcade.PhysicsEngineSimple(
             self.player_sprite, self.collision_list
         )
@@ -162,7 +163,7 @@ class PlayView(arcade.View):
         """
         self.clear()
 
-        self.camera_shake.update_camera()  # Запчасть от тряски камеры
+        self.camera_shake.update_camera()
         self.world_camera.use()
         self.wall_list.draw()
         self.player_list.draw()
@@ -171,10 +172,47 @@ class PlayView(arcade.View):
         self.potion_list.draw()
         self.camera_shake.readjust_camera()
 
+        # GUI камера - для интерфейса поверх всего
         self.gui_camera.use()
 
-        # Рисуем UI
+        # Рисуем HP бар всегда (даже при смерти)
         self._draw_ui()
+        
+        # ЭКРАН СМЕРТИ - рисуем поверх всего
+        if self.is_dead:
+            # Красный полупрозрачный прямоугольник на весь экран
+            arcade.draw_rect_filled(
+                arcade.rect.XYWH(
+                    self.window.width // 2,
+                    self.window.height // 2,  
+                    self.window.width,
+                    self.window.height
+                ),
+                (255, 0, 0, 150)  # Красный с прозрачностью
+            )
+            
+            # Белая надпись "ВЫ ПОГИБЛИ" по центру
+            arcade.draw_text(
+                "ВЫ ПОГИБЛИ",
+                self.window.width // 2,
+                self.window.height // 2 + 50,
+                arcade.color.WHITE,
+                64,
+                anchor_x="center",
+                anchor_y="center",
+                bold=True
+            )
+            
+            # Инструкция для продолжения
+            arcade.draw_text(
+                "Нажмите ESC для выхода в меню",
+                self.window.width // 2,
+                self.window.height // 2 - 100,
+                arcade.color.WHITE,
+                24,
+                anchor_x="center",
+                anchor_y="center"
+            )
 
     def _draw_ui(self):
         """
@@ -189,15 +227,27 @@ class PlayView(arcade.View):
         self.hp_percent.draw()
 
     def on_update(self, delta_time):
-        self.camera_shake.update(delta_time)
+        # Проверяем смерть
+        if self.player_sprite.health <= 0 and not self.is_dead:
+            print("Игрок умер! Включаем экран смерти.")
+            self.is_dead = True
+            # Останавливаем движение
+            self.left_pressed = False
+            self.right_pressed = False
+            self.up_pressed = False
+            self.down_pressed = False
+            return  # Останавливаем обновление игры
 
-        self.player_list.update(delta_time, self.keys_pressed)
+        # Если игрок жив, обновляем игру
+        if not self.is_dead:
+            self.camera_shake.update(delta_time)
+            self.player_list.update(delta_time, self.keys_pressed)
+            self.potion_list.update()
+            self.player_list.update_animation()
 
         self.effect_list.update()
 
         self.potion_list.update()
-
-        self.player_list.update_animation()
 
         self.effect_list.update_animation()
 
@@ -244,9 +294,14 @@ class PlayView(arcade.View):
                 potion.remove_from_sprite_lists()
 
     def on_key_press(self, key, modifiers):
-        """
-        Обработка нажатия клавиш
-        """
+        # Если игрок умер
+        if self.is_dead:
+            if key == arcade.key.ESCAPE:
+                print("Выход в меню...")
+                self.window.show_view(self.parent)
+            return  # Не обрабатываем другие клавиши при смерти
+        
+        # Если игрок жив
         if key == arcade.key.A or key == arcade.key.LEFT:
             self.left_pressed = True
             self.keys_pressed.add(key)
@@ -260,26 +315,25 @@ class PlayView(arcade.View):
             self.down_pressed = True
             self.keys_pressed.add(key)
         elif key == arcade.key.Q:
-            self.player_sprite.health = self.player_sprite.health - \
-                1 if self.player_sprite.health - 1 >= 0 else 0
+            # Тестирование: уменьшение здоровья
+            self.player_sprite.health -= 1
+            if self.player_sprite.health < 0:
+                self.player_sprite.health = 0
             print(f"Здоровье: {self.player_sprite.health}")
         elif key == arcade.key.F11:
-            # Полноэкранный режим
             self.window.set_fullscreen(not self.window.fullscreen)
         elif key == arcade.key.E:
-            # Проверяем, достиг ли игрок выхода
             exit_hit_list = arcade.check_for_collision_with_list(
                 self.player_sprite, self.exit_list)
             if exit_hit_list:
                 pass
-                # Здесь можно добавить переход на следующий уровень
         elif key == arcade.key.ESCAPE:
             self.window.show_view(self.parent)
 
     def on_key_release(self, key, modifiers):
-        """
-        Обработка отпускания клавиш
-        """
+        if self.is_dead:
+            return
+            
         if key == arcade.key.A or key == arcade.key.LEFT:
             self.left_pressed = False
             if key in self.keys_pressed:
@@ -298,6 +352,9 @@ class PlayView(arcade.View):
                 self.keys_pressed.remove(key)
 
     def on_mouse_press(self, x, y, button, modifiers):
+        if self.is_dead:
+            return
+            
         if button == arcade.MOUSE_BUTTON_LEFT and self.can_attack:
             self.create_potion(x, y)
             self.can_attack = False
@@ -315,8 +372,6 @@ class PlayView(arcade.View):
             world_y, world_y=self.world_height, world_x=self.world_width
         )
         self.potion_list.append(potion)
-        # Проигрываем звук выстрела
-        # arcade.play_sound(self.shoot_sound)
 
     def attack_ready(self, delta_time):
         self.can_attack = True
