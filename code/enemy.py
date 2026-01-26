@@ -6,33 +6,33 @@ class FaceDirection(enum.Enum):
     RIGHT = 1
 
 
-class Hero(arcade.Sprite):
+class Enemy(arcade.Sprite):
     def __init__(self):
         super().__init__()
 
         # Основные характеристики
-        self.scale = 0.4
-        self.speed = 160
-        self.health = 25
-        self.damage = 10
+        self.scale = 0.2
+        self.speed = 4
+        self.health = 15
+        self.damage = 5
 
         # Загрузка текстур
 
         self.idle_texture_moving = []
-        for i in range(1, 7):
+        for i in range(1, 5):
             texture = arcade.load_texture(
-                f"assets/resource_packs/default/alchimic/idle/Default_alchimic_idle_{i}.png")
+                f"assets/resource_packs/default/enemy/idle/enemy_idle_{i}.png")
             self.idle_texture_moving.append(texture)
 
         self.idle_texture = arcade.load_texture(
-            "assets/resource_packs/default/alchimic/static/Default_alchimic_png.png")
+            "assets/resource_packs/default/enemy/static/enemy.png")
 
         self.texture = self.idle_texture
 
         self.walk_textures = []
-        for i in range(1, 9):
+        for i in range(1, 6):
             texture = arcade.load_texture(
-                f"assets/resource_packs/default/alchimic/walk_run/Default_alchimic_walk_{i}.png")
+                f"assets/resource_packs/default/enemy/walk_run/enemy_walk_run_{i}.png")
             self.walk_textures.append(texture)
 
         self.current_texture = 0

@@ -1,5 +1,6 @@
 from constants import *
 from start_menu import *
+from MainLobby import *
 from Game_start import *
 
 
@@ -23,8 +24,8 @@ class GameMainWindow(arcade.Window):
 def main():
     window = GameMainWindow(WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_TITLE)
     window.set_icon(pyglet_load("assets/pictures/trs_logo.png"))
-    start_menu = StartMenuView()
-    window.show_view(start_menu)
+    first_screen = PlayView()
+    window.show_view(first_screen)
     arcade.run()
 
 

@@ -3,7 +3,7 @@ from MainLobby import *
 
 
 class StartMenuView(arcade.View):
-    def __init__(self):
+    def __init__(self, obj=None):
         super().__init__()
         self.background_color = (128, 128, 128)
         self.start_radius = 50
