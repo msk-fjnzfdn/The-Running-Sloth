@@ -29,3 +29,8 @@ COLOR_BUTTON_DEFAULT = (100, 100, 100)
 
 WINDOW_TITLE = "The Running Sloth"
 SCREEN_TITLE = "The Running Sloth - Game"
+
+
+class FaceDirection(enum.Enum):
+    LEFT = 0
+    RIGHT = 1

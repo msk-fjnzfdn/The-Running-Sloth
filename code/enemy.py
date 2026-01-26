@@ -1,11 +1,6 @@
 from constants import *
 
 
-class FaceDirection(enum.Enum):
-    LEFT = 0
-    RIGHT = 1
-
-
 class Enemy(arcade.Sprite):
     def __init__(self):
         super().__init__()
@@ -13,8 +8,8 @@ class Enemy(arcade.Sprite):
         # Основные характеристики
         self.scale = 0.2
         self.speed = 4
-        self.health = 15
-        self.damage = 5
+        self.health = 10
+        self.damage = 1
 
         # Загрузка текстур
 

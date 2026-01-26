@@ -2,6 +2,7 @@ from id1_character import *
 from id1_attack import *
 from enemy import *
 from constants import *
+from wave_effect import *
 
 
 class PlayView(arcade.View):
@@ -20,6 +21,7 @@ class PlayView(arcade.View):
         self.collision_list = None
         self.background_list = None
         self.potion_list = None
+        self.effect_list = None
 
         # Игрок
         self.player_sprite = None
@@ -74,6 +76,7 @@ class PlayView(arcade.View):
         self.collision_list = arcade.SpriteList()
         self.background_list = arcade.SpriteList()
         self.potion_list = arcade.SpriteList()
+        self.effect_list = arcade.SpriteList()
 
         # Загружаем карту
         self._load_map()
@@ -164,6 +167,7 @@ class PlayView(arcade.View):
         self.wall_list.draw()
         self.player_list.draw()
         self.chests_list.draw()
+        self.effect_list.draw()
         self.potion_list.draw()
         self.camera_shake.readjust_camera()
 
@@ -176,9 +180,9 @@ class PlayView(arcade.View):
         """
         Отрисовка интерфейса
         """
-        arcade.draw_sprite(self.hp_bar[self.player_sprite.health // 5])
+        arcade.draw_sprite(self.hp_bar[self.player_sprite.health // 1])
         self.hp_percent = arcade.Text(
-            f"{int(self.player_sprite.health / 25 * 100)}%",
+            f"{int(self.player_sprite.health / 5 * 100)}%",
             140, self.window.height - 46,
             arcade.color.BLACK, 16
         )
@@ -189,9 +193,13 @@ class PlayView(arcade.View):
 
         self.player_list.update(delta_time, self.keys_pressed)
 
+        self.effect_list.update()
+
         self.potion_list.update()
 
         self.player_list.update_animation()
+
+        self.effect_list.update_animation()
 
         position = (
             self.player_sprite.center_x,
@@ -202,8 +210,6 @@ class PlayView(arcade.View):
             position,
             0.15,  # Плавность следования камеры
         )
-
-        # Обновление состояния каждый кадр
 
         # Обновляем движение игрока
         self.player_sprite.change_x = 0
@@ -233,6 +239,8 @@ class PlayView(arcade.View):
             hit_list = arcade.check_for_collision_with_list(
                 potion, self.collision_list)
             if hit_list:
+                wave = WEffect(x=potion.center_x, y=potion.center_y)
+                self.effect_list.append(wave)
                 potion.remove_from_sprite_lists()
 
     def on_key_press(self, key, modifiers):
@@ -293,9 +301,7 @@ class PlayView(arcade.View):
         if button == arcade.MOUSE_BUTTON_LEFT and self.can_attack:
             self.create_potion(x, y)
             self.can_attack = False
-            arcade.schedule(self.weapon_ready, self.shoot_cooldown)
-            # Проигрываем звук выстрела
-            # arcade.play_sound(self.shoot_sound)
+            arcade.schedule(self.attack_ready, self.shoot_cooldown)
 
     def create_potion(self, x, y):
         world_x = self.world_camera.position[0] - \
@@ -312,6 +318,6 @@ class PlayView(arcade.View):
         # Проигрываем звук выстрела
         # arcade.play_sound(self.shoot_sound)
 
-    def weapon_ready(self, delta_time):
+    def attack_ready(self, delta_time):
         self.can_attack = True
-        arcade.unschedule(self.weapon_ready)
+        arcade.unschedule(self.attack_ready)
