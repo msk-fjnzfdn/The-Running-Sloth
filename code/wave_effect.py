@@ -17,8 +17,8 @@ class WEffect(arcade.Sprite):
                 f"assets/resource_packs/default/alchimic/attack_effect/attack_effect_{i}.png")
             self.idle_texture_moving.append(texture)
 
-        self.texture = arcade.load_texture("assets/resource_packs/default/alchimic/attack_effect/attack_effect_1.png")
-
+        self.texture = arcade.load_texture(
+            "assets/resource_packs/default/alchimic/attack_effect/attack_effect_1.png")
 
         self.current_texture = 0
         self.texture_change_time = 0
@@ -41,8 +41,7 @@ class WEffect(arcade.Sprite):
             if self.current_texture >= len(self.idle_texture_moving):
                 self.current_texture = 0
             self.texture = self.idle_texture_moving[self.current_texture]
-        
-   
+
     def update(self, delta_time):
         if self.count == 3:
             self.remove_from_sprite_lists()

@@ -2,14 +2,14 @@ from constants import *
 
 
 class Enemy(arcade.Sprite):
-    def __init__(self):
+    def __init__(self, x, y):
         super().__init__()
 
         # Основные характеристики
         self.scale = 0.2
-        self.speed = 4
+        self.speed = 120
         self.health = 10
-        self.damage = 1
+        #self.damage = 1
 
         # Загрузка текстур
 
@@ -38,8 +38,8 @@ class Enemy(arcade.Sprite):
         self.face_direction = FaceDirection.RIGHT  # и смотрим вправо
 
         # Центрируем персонажа
-        self.center_x = 1500
-        self.center_y = 1500
+        self.center_x = x
+        self.center_y = y
 
     def update_animation(self, delta_time: float = 1/60):
         """
@@ -73,7 +73,7 @@ class Enemy(arcade.Sprite):
                     self.texture = self.idle_texture_moving[self.current_texture].flip_horizontally(
                     )
 
-    def update(self, delta_time, keys_pressed):
+    def update(self, delta_time, keys_pressed=()):
         """
         Перемещение персонажа
         """

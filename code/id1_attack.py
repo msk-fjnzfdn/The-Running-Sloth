@@ -8,7 +8,7 @@ class Potion(arcade.Sprite):
             "assets/resource_packs/gui/Spells/potion_attack.png")
         self.center_x = start_x
         self.center_y = start_y
-        self.speed = 750
+        self.speed = 400
         self.damage = 5
         self.world_x = world_x
         self.world_y = world_y
