@@ -35,7 +35,7 @@ class AEffect(arcade.Sprite):
         """
         Обновление анимации
         """
-        self.texture_change_time += delta_time * 2
+        self.texture_change_time += delta_time * 3
         if self.texture_change_time >= self.texture_change_delay:
             self.count += 1
             self.texture_change_time = 0
