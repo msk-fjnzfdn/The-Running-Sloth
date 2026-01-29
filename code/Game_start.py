@@ -129,8 +129,8 @@ class PlayView(arcade.View):
             self.win_sound = arcade.load_sound("assets/music/win_sound.mp3")
             self.death_sound = arcade.load_sound(
                 "assets/music/death_sound.mp3")
-            self.monster_attack_sound = None
-            self.player_attack_sound = None
+            self.monster_attack_sound = arcade.load_sound("assets/music/monster_attack_sound.mp3")
+            self.player_attack_sound = arcade.load_sound("assets/music/player_attack_sound.mp3")
             self.player_lose_hp_sound = None
             self.escape_sound = arcade.load_sound("assets/music/idk_sound.mp3")
         except Exception as e:
@@ -558,7 +558,6 @@ class PlayView(arcade.View):
         """
         Проверяем столкновения снарядов с врагами
         """
-        # Создаем копию списка, так как будем удалять элементы
         for potion in self.potion_list:
             # Проверяем столкновение с врагами
             enemy_hit_list = arcade.check_for_collision_with_list(
@@ -571,12 +570,12 @@ class PlayView(arcade.View):
                 potion.remove_from_sprite_lists()
 
                 # Наносим урон врагу
-                enemy.health -= potion.damage  # Предполагаем, что у врага есть свойство health
+                enemy.health -= potion.damage
 
                 # Если враг умер
                 if enemy.health <= 0:
                     enemy.remove_from_sprite_lists()
-                    self.monster_collected += 1  # Увеличиваем счетчик убитых врагов
+                    self.monster_collected += 1
                 break
 
     def wave_enemy(self):
@@ -586,7 +585,7 @@ class PlayView(arcade.View):
                 self.enemy_spawn_list
             )
             for enemy in enemy_hit_list:
-                enemy.health -= effect.damage  # Предполагаем, что у врага есть свойство health
+                enemy.health -= effect.damage
 
                 # Если враг умер
                 if enemy.health <= 0:
@@ -605,7 +604,7 @@ class PlayView(arcade.View):
         )
 
         for enemy in enemy_hit_list:
-            #self.monster_attack_sound.play()
+            self.monster_attack_sound.play(volume=0.5)
             # Уменьшаем здоровье игрока при столкновении
             if not self.immortality:
                 #self.player_lose_hp_sound.play()
@@ -773,7 +772,7 @@ class PlayView(arcade.View):
             splash = AEffect(x=self.player_sprite.center_x, y=self.player_sprite.center_y -
                              20, face_direction=self.player_sprite.face_direction)
             self.effect_list.append(splash)
-            #self.player_attack_sound.play()
+            self.player_attack_sound.play(volume=0.5)
             self.create_potion(x, y)
             self.can_attack = False
             arcade.schedule(self.attack_ready, self.shoot_cooldown)
@@ -821,7 +820,7 @@ class PlayView(arcade.View):
     def _setup_music(self):
         try:
             # Пробуем разные пути к файлу
-            music_paths = ["assets/music/lobby_music.mp3"]
+            music_paths = ["assets/music/game_music.mp3"]
             for path in music_paths:
                 if os.path.exists(path):
                     self.lobby_music = arcade.load_sound(path)
