@@ -6,8 +6,8 @@ class AEffect(arcade.Sprite):
         super().__init__()
 
         # Основные характеристики
-        self.scale = 0.3
-        self.damage = 7
+        self.scale = 0.4
+        self.damage = 15
 
         # Загрузка текстур
 
@@ -49,6 +49,8 @@ class AEffect(arcade.Sprite):
                 self.texture = self.attack_texture_moving[self.current_texture].flip_horizontally(
                 )
 
-    def update(self, delta_time):
+    def update(self, delta_time, x, y):
         if self.count == 5:
             self.remove_from_sprite_lists()
+        self.center_x = x
+        self.center_y = y

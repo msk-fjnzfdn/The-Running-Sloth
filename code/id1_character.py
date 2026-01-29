@@ -7,7 +7,7 @@ class Hero(arcade.Sprite):
 
         # Основные характеристики
         self.scale = 0.4
-        self.speed = 160
+        self.speed = 320
         self.health = 5
 
         # Загрузка текстур

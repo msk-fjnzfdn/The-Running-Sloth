@@ -9,7 +9,7 @@ class Potion(arcade.Sprite):
         self.center_x = start_x
         self.center_y = start_y
         self.speed = 400
-        self.damage = 5
+        self.damage = 6
         self.world_x = world_x
         self.world_y = world_y
         self.scale = 0.2

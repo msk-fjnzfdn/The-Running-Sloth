@@ -52,21 +52,11 @@ class MainLobby(arcade.View):
         self.setup()
 
     def load_settings(self):
-        try:
-            with open("code/settings.json", "r", encoding="utf-8") as f:
-                self.user_settings = json.load(f)
-
-            # Загружаем сохраненную громкость музыки
-            if "music_volume" in self.user_settings:
-                self.music_volume = self.user_settings["music_volume"]
-            else:
-                self.music_volume = 0.3
-        except Exception:
-            self.music_volume = 0.3
+        self.music_volume = self.window.user_settings["music_volume"]
 
     def save_settings(self):
         with open("code/settings.json", "w", encoding="utf-8") as f:
-            json.dump(self.user_settings, f, indent=4, ensure_ascii=False)
+            json.dump(self.window.user_settings, f, indent=4, ensure_ascii=False)
 
     def update_all_positions(self):
         window_width = self.window.width
@@ -167,6 +157,8 @@ class MainLobby(arcade.View):
             else:
                 print(
                     "❗Файл музыки не найден. Проверьте наличие файла в директории проекта.")
+            self.btn_select_sound = arcade.load_sound("assets/music/button_sound.mp3")
+            self.escape_sound = arcade.load_sound("assets/music/idk_sound.mp3")
 
         except Exception as e:
             print(f"❗Ошибка при загрузке музыки: {e}")
@@ -192,7 +184,7 @@ class MainLobby(arcade.View):
         self.buttons.append(back_btn)
 
     def on_show_view(self):
-        if self.user_settings.get("fullscreen", False):
+        if self.window.user_settings.get("fullscreen", False):
             self.window.set_fullscreen(True)
 
         # Запускаем музыку при показе лобби, только если она еще не играет
@@ -352,23 +344,26 @@ class MainLobby(arcade.View):
 
             if abs(x - slot.center_x) <= click_width and abs(y - slot.center_y) <= click_height:
                 if slot.is_unlocked:
+                    self.btn_select_sound.play()
                     for s in self.character_slots:
                         s.is_selected = False
                     slot.is_selected = True
                     self.selected_character = slot.character_id
                 else:
-                    pass
+                    self.btn_select_sound.play()
 
         # Обработка кликов по кнопкам
         for btn in self.buttons:
             if abs(x - btn.center_x) <= btn.width / 2 and abs(y - btn.center_y) <= btn.height / 2:
                 if btn.label == "НАЧАТЬ ИГРУ":
                     if self.selected_character:
+                        self.btn_select_sound.play()
                         self.play_view = PlayView(character_id=1, obj=self)
                         self.window.show_view(self.play_view)
                     else:
                         pass
                 elif btn.label == "НАЗАД":
+                    self.escape_sound.play()
                     self.window.show_view(self.parent)
 
     def on_key_press(self, key, modifiers):
@@ -397,19 +392,21 @@ class MainLobby(arcade.View):
                 pass
 
         elif key == arcade.key.ESCAPE:
-            pass
+            self.escape_sound.play()
+            self.window.show_view(self.parent)
 
         elif key == arcade.key.F11:
             self.window.set_fullscreen(not self.window.fullscreen)
             self.update_all_positions()
-            self.user_settings["fullscreen"] = self.window.fullscreen
+            self.window.user_settings["fullscreen"] = self.window.fullscreen
             self.save_settings()
 
         # Управление музыкой
         elif key == arcade.key.PLUS or key == arcade.key.EQUAL:
             if self.music_volume < 1.0:
                 self.music_volume = min(1.0, self.music_volume + 0.1)
-                self.user_settings["music_volume"] = float(
+                print(f"Громкость музыки: {int(self.music_volume * 100)}%")
+                self.window.user_settings["music_volume"] = float(
                     int(self.music_volume * 100)) / 100
                 self.save_settings()
                 # Обновляем громкость играющей музыки
@@ -419,7 +416,7 @@ class MainLobby(arcade.View):
             if self.music_volume > 0.0:
                 self.music_volume = max(0.0, self.music_volume - 0.1)
                 print(f"Громкость музыки: {int(self.music_volume * 100)}%")
-                self.user_settings["music_volume"] = float(
+                self.window.user_settings["music_volume"] = float(
                     int(self.music_volume * 100)) / 100
                 self.save_settings()
                 # Обновляем громкость играющей музыки

@@ -6,7 +6,7 @@ class WEffect(arcade.Sprite):
         super().__init__()
 
         # Основные характеристики
-        self.scale = 0.4
+        self.scale = 0.45
         self.damage = 7
 
         # Загрузка текстур
@@ -42,6 +42,6 @@ class WEffect(arcade.Sprite):
                 self.current_texture = 0
             self.texture = self.idle_texture_moving[self.current_texture]
 
-    def update(self, delta_time):
+    def update(self, delta_time, x=0, y=0):
         if self.count == 3:
             self.remove_from_sprite_lists()

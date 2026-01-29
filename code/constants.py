@@ -7,6 +7,7 @@ import random
 import json
 import enum
 import os
+import time
 
 WINDOW_WIDTH = 1200
 WINDOW_HEIGHT = 800

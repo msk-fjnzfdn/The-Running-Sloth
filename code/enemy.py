@@ -9,7 +9,7 @@ class Enemy(arcade.Sprite):
         self.scale = 0.2
         self.speed = 120
         self.health = 10
-        #self.damage = 1
+        self.damage = 1
 
         # Загрузка текстур
 
@@ -18,6 +18,13 @@ class Enemy(arcade.Sprite):
             texture = arcade.load_texture(
                 f"assets/resource_packs/default/enemy/idle/enemy_idle_{i}.png")
             self.idle_texture_moving.append(texture)
+
+        self.attack_texture_moving = []
+        for i in range(1, 7):
+            texture = arcade.load_texture(
+                f"assets/resource_packs/default/enemy/attack/enemy_attack_{i}.png")
+            self.attack_texture_moving.append(texture)
+
 
         self.idle_texture = arcade.load_texture(
             "assets/resource_packs/default/enemy/static/enemy.png")
@@ -35,6 +42,8 @@ class Enemy(arcade.Sprite):
         self.texture_change_delay = 0.1  # секунд на кадр
 
         self.is_walking = False  # Никуда не идём
+        self.is_attacking = False
+        self.count = 0
         self.face_direction = FaceDirection.RIGHT  # и смотрим вправо
 
         # Центрируем персонажа
@@ -45,7 +54,25 @@ class Enemy(arcade.Sprite):
         """
         Обновление анимации
         """
-        if self.is_walking:
+        if self.is_attacking:
+            self.texture_change_time += delta_time
+            if self.texture_change_time >= self.texture_change_delay:
+                self.scale = 0.4
+                self.count += 1
+                if self.count >= 6:
+                    self.is_attacking = False
+                    self.scale = 0.2
+                self.texture_change_time = 0
+                self.current_texture += 1
+                if self.current_texture >= len(self.attack_texture_moving):
+                    self.current_texture = 0
+                # Поворачиваем текстуру в зависимости от направления взгляда
+                if self.face_direction == FaceDirection.RIGHT:
+                    self.texture = self.attack_texture_moving[self.current_texture]
+                else:
+                    self.texture = self.attack_texture_moving[self.current_texture].flip_horizontally(
+                    )
+        elif self.is_walking:
             self.texture_change_time += delta_time
             if self.texture_change_time >= self.texture_change_delay:
                 self.texture_change_time = 0
@@ -73,7 +100,7 @@ class Enemy(arcade.Sprite):
                     self.texture = self.idle_texture_moving[self.current_texture].flip_horizontally(
                     )
 
-    def update(self, delta_time, keys_pressed=()):
+    def update(self, delta_time, keys_pressed=set()):
         """
         Перемещение персонажа
         """
@@ -104,3 +131,18 @@ class Enemy(arcade.Sprite):
 
         # Проверка на движение
         self.is_walking = dx or dy
+    def logic(self, delta_time, x, y):
+        self.move = set()
+        if self.center_x < x:
+            self.move.add(arcade.key.D)
+        elif self.center_x > x:
+            self.move.add(arcade.key.A)
+        if self.center_y < y:
+            self.move.add(arcade.key.W)
+        elif self.center_y > y:
+            self.move.add(arcade.key.S)
+        self.update(delta_time, self.move)
+
+    def attack(self):
+        self.is_attacking = True
+        self.scale = 0.3
