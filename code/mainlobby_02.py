@@ -1,7 +1,7 @@
 from constants import *
-from lobbySlot import *
-from add_to_lobby import LobbyUIManager
-from game_start import *
+from lobbySlot_02 import *
+from add_to_lobby_02 import LobbyUIManager
+from game_start_02 import *
 from id1_character import *
 
 
@@ -9,6 +9,7 @@ class MainLobby(arcade.View):
     def __init__(self, obj=None):
         super().__init__()
 
+        #родительский класс
         self.parent = obj
 
         # Загрузка настроек

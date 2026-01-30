@@ -1,10 +1,12 @@
 from constants import *
-from mainlobby import *
+from mainlobby_02 import *
 
 
 class StartMenuView(arcade.View):
     def __init__(self, obj=None):
         super().__init__()
+        #родительский класс
+        self.parent = obj
         self.background_color = (128, 128, 128)
         self.start_radius = 50
         self.circle_change = 1

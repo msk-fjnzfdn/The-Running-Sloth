@@ -7,7 +7,7 @@ SCREEN_TITLE = "The Running Sloth - Character Lobby"
 
 class LobbySlot:
     def __init__(self, x, y, character_id, name, description, is_unlocked=True):
-        self.base_x = x  # Базовые координаты для разрешения 1200x800
+        self.base_x = x
         self.base_y = y
         # Текущие координаты (будут обновляться при масштабировании)
         self.center_x = x

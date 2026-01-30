@@ -20,7 +20,6 @@ class LobbyUIManager:
         # Кнопки
         self.button_texts = []
 
-        # Инициализация UI
         self._initialize_ui()
 
         # Создание текстов для кнопок

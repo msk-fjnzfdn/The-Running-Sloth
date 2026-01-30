@@ -137,9 +137,9 @@ class PlayView(arcade.View):
             print(f"❗Ошибка загрузки звуков игры: {e}")
 
         # Загружаем карту
-        self._load_map()
+        self.load_map()
 
-        self._setup_music()
+        self.setup_music()
 
         # Инициализируем таймер и счетчик сундуков
         self.start_time = time.time()
@@ -150,7 +150,7 @@ class PlayView(arcade.View):
         self.victory_time = None
         self.portal_glow = 0
 
-    def _load_map(self):
+    def load_map(self):
         """
         Загрузка карты из TMX файла
         """
@@ -203,14 +203,14 @@ class PlayView(arcade.View):
 
         self.total_chests = len(self.chests_list)
 
-        self._create_player(start_x, start_y, self.hp_lvl)
-        self._create_enemies()
+        self.create_player(start_x, start_y, self.hp_lvl)
+        self.create_enemies()
 
         self.physics_engine = arcade.PhysicsEngineSimple(
             self.player_sprite, self.collision_list
         )
 
-    def _create_player(self, start_x, start_y, hp_lvl=0):
+    def create_player(self, start_x, start_y, hp_lvl=0):
         """
         Создание спрайта игрока
         """
@@ -220,12 +220,12 @@ class PlayView(arcade.View):
         self.player_sprite.center_y = start_y
         self.player_list.append(self.player_sprite)
 
-    def _create_enemies(self):
+    def create_enemies(self):
         for enemy_spawn in self.tiled_map.sprite_lists["EnemyStart"]:
             monster = Enemy(x=enemy_spawn.center_x, y=enemy_spawn.center_y)
             self.enemy_spawn_list.append(monster)
 
-    def _draw_portal(self):
+    def draw_portal(self):
         portal_x, portal_y = self.portal_position
 
         # Анимация пульсации
@@ -282,7 +282,7 @@ class PlayView(arcade.View):
         self.camera_shake.update_camera()
         self.world_camera.use()
         self.wall_list.draw()
-        self._draw_portal()
+        self.draw_portal()
         self.player_list.draw()
         self.chests_list.draw()
         self.enemy_spawn_list.draw()
@@ -296,9 +296,9 @@ class PlayView(arcade.View):
             self.window.width / 2, self.window.height / 2)
 
         # Рисуем HP бар всегда (даже при смерти)
-        self._draw_ui()
+        self.draw_ui()
 
-    def _draw_ui(self):
+    def draw_ui(self):
         """
         Отрисовка интерфейса
         """
@@ -327,15 +327,15 @@ class PlayView(arcade.View):
         self.game_timer.draw()
         if self.show_victory:
             if self.win_the_game:
-                self._draw_victory_screen(text="ПОЗДРАВЛЯЕМ, ВЫ ПРОШЛИ ИГРУ!")
+                self.draw_victory_screen(text="ПОЗДРАВЛЯЕМ, ВЫ ПРОШЛИ ИГРУ!")
             else:
-                self._draw_victory_screen()
+                self.draw_victory_screen()
         elif self.is_dead:
-            self._draw_death_screen()
+            self.draw_death_screen()
         elif self.pause:
-            self._draw_pause_screen()
+            self.draw_pause_screen()
 
-    def _draw_victory_screen(self, text="ВЫ ПРОШЛИ УРОВЕНЬ!"):
+    def draw_victory_screen(self, text="ВЫ ПРОШЛИ УРОВЕНЬ!"):
         """Отрисовка окна победы"""
         # Полупрозрачный фон
         arcade.draw_rect_filled(
@@ -403,7 +403,7 @@ class PlayView(arcade.View):
         )
         escape.draw()
 
-    def _draw_death_screen(self):
+    def draw_death_screen(self):
         # Красный полупрозрачный прямоугольник на весь экран
         arcade.draw_rect_filled(
             arcade.rect.XYWH(
@@ -439,7 +439,7 @@ class PlayView(arcade.View):
         )
         self.esc.draw()
 
-    def _draw_pause_screen(self):
+    def draw_pause_screen(self):
         # Красный полупрозрачный прямоугольник на весь экран
         arcade.draw_rect_filled(
             arcade.rect.XYWH(
@@ -713,7 +713,7 @@ class PlayView(arcade.View):
                 self.window.user_settings["music_volume"] = float(
                     int(self.music_volume * 100)) / 100
                 self.save_settings()
-                self._update_music_volume()
+                self.update_music_volume()
 
         elif key == arcade.key.MINUS:
             if self.music_volume > 0.0:
@@ -722,7 +722,7 @@ class PlayView(arcade.View):
                 self.window.user_settings["music_volume"] = float(
                     int(self.music_volume * 100)) / 100
                 self.save_settings()
-                self._update_music_volume()
+                self.update_music_volume()
 
         elif key == arcade.key.M:
             if self.lobby_music:
@@ -806,7 +806,7 @@ class PlayView(arcade.View):
         self.enemy_spawn_list = arcade.SpriteList()
         self.player_list = arcade.SpriteList()
         self.hp_lvl = 5 - self.player_sprite.health
-        self._load_map()
+        self.load_map()
 
     def update_pos(self, sprite, list=False):
         if list:
@@ -817,7 +817,7 @@ class PlayView(arcade.View):
             sprite.center_x = sprite.center_x
             sprite.center_y = self.window.height - 80
 
-    def _setup_music(self):
+    def setup_music(self):
         try:
             # Пробуем разные пути к файлу
             music_paths = ["assets/music/game_music.mp3"]
@@ -835,7 +835,7 @@ class PlayView(arcade.View):
         except Exception as e:
             print(f"❗Ошибка при загрузке музыки: {e}")
     
-    def _update_music_volume(self):
+    def update_music_volume(self):
         if self.lobby_music and self.music_player:
             try:
                 # Останавливаем текущее воспроизведение
