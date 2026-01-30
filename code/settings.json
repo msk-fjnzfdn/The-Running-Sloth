@@ -1,5 +1,5 @@
 {
     "name": "The running sloth",
-    "fullscreen": false,
-    "music_volume": 0.2
+    "fullscreen": true,
+    "music_volume": 0.0
 }

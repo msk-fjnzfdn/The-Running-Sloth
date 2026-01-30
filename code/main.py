@@ -1,7 +1,7 @@
 from constants import *
-from Start_menu import *
-from MainLobby import *
-from Game_start import *
+from start_menu import *
+from mainlobby import *
+from game_start import *
 
 
 class GameMainWindow(arcade.Window):

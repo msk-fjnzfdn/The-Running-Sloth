@@ -1,7 +1,7 @@
 from constants import *
-from LobbySlot import *
-from Add_To_Lobby import LobbyUIManager
-from Game_start import *
+from lobbySlot import *
+from add_to_lobby import LobbyUIManager
+from game_start import *
 from id1_character import *
 
 

@@ -1,5 +1,5 @@
 from constants import *
-from MainLobby import *
+from mainlobby import *
 
 
 class StartMenuView(arcade.View):
